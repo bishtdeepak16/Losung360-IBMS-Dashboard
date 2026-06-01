@@ -487,6 +487,46 @@ select:hover,select:focus{border-color:var(--orange);}
 .cc-info-row .ci-val{color:var(--orange);font-weight:700;white-space:nowrap;}
 
 /* ═══ LOGIN SCREEN ═══ */
+
+/* ── User Panel Modal ─────────────────────────────── */
+.up-overlay{position:fixed;inset:0;z-index:9100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);}
+.up-modal{background:var(--card-bg);border-radius:20px;width:min(95vw,740px);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.22);overflow:hidden;position:relative;}
+.up-header{padding:22px 28px 18px;border-bottom:1px solid var(--card-border);background:linear-gradient(135deg,#fff7ed,var(--card-bg));flex-shrink:0;}
+.up-header-top{display:flex;align-items:center;gap:14px;}
+.up-header-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(249,115,22,.18),rgba(249,115,22,.07));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.up-header-title{font-size:16px;font-weight:700;color:var(--text1);letter-spacing:-.01em;}
+.up-header-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.up-close{position:absolute;top:16px;right:16px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.up-close:hover{background:#fef2f2;color:#dc2626;border-color:#fecaca;}
+.up-body{overflow-y:auto;padding:20px 28px 24px;flex:1;}
+.up-section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
+.up-table{width:100%;border-collapse:collapse;margin-bottom:24px;}
+.up-table th{text-align:left;padding:8px 12px;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:2px solid var(--card-border);}
+.up-table td{padding:10px 12px;border-bottom:1px solid var(--card-border);font-size:12px;color:var(--text1);vertical-align:middle;}
+.up-table tr:last-child td{border-bottom:none;}
+.up-table tr:hover td{background:var(--orange-tint);}
+.up-role-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;}
+.up-role-planning{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.up-role-fc{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
+.up-fc-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;}
+.up-remove-btn{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;}
+.up-remove-btn:hover{background:#dc2626;color:#fff;}
+.up-master-badge{font-size:9px;font-weight:700;color:#f97316;background:#fff7ed;border:1px solid #fed7aa;padding:1px 7px;border-radius:20px;margin-left:6px;}
+.up-add-form{background:rgba(0,0,0,.025);border-radius:14px;padding:18px 20px;border:1px solid var(--card-border);}
+.up-add-title{font-size:12px;font-weight:700;color:var(--text1);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.up-form-row{display:grid;grid-template-columns:1fr 130px 130px auto;gap:10px;align-items:end;}
+.up-form-group{display:flex;flex-direction:column;gap:5px;}
+.up-form-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+.up-form-input,.up-form-select{padding:8px 12px;border:1.5px solid var(--card-border);border-radius:10px;font-size:12px;color:var(--text1);background:var(--card-bg);outline:none;font-family:inherit;}
+.up-form-input:focus,.up-form-select:focus{border-color:#f97316;box-shadow:0 0 0 3px rgba(249,115,22,.1);}
+.up-add-btn{padding:8px 18px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;height:38px;}
+.up-add-btn:hover{background:linear-gradient(135deg,#ea580c,#c2410c);}
+.up-stat-row{display:flex;gap:12px;margin-bottom:20px;}
+.up-stat{flex:1;background:rgba(0,0,0,.025);border-radius:12px;padding:12px 16px;text-align:center;border:1px solid var(--card-border);}
+.up-stat-num{font-size:24px;font-weight:700;color:var(--text1);}
+.up-stat-lbl{font-size:10px;color:var(--text3);font-weight:600;margin-top:2px;}
+.up-msg{margin-top:10px;font-size:11px;font-weight:600;display:none;padding:7px 14px;border-radius:8px;}
+
 #loginScreen{
   position:fixed;inset:0;z-index:9999;
   display:flex;align-items:center;justify-content:center;
@@ -1875,6 +1915,187 @@ function exportOpsKPI(type) {
   const a = document.createElement('a');
   a.href=url; a.download=`ops_kpi_${type}_${new Date().toISOString().slice(0,10)}.csv`;
   a.click(); URL.revokeObjectURL(url);
+}
+
+
+// ── User Panel ─────────────────────────────────────────────────────────────
+function openUserPanel() {
+  const drop = document.getElementById('userDropdown');
+  if (drop) drop.classList.remove('open');
+  const existing = document.getElementById('userPanelOverlay');
+  if (existing) existing.remove();
+  renderUserPanel();
+}
+
+async function fetchUsersForPanel() {
+  const token = sessionStorage.getItem('gtoken');
+  if (!token) return ACCESS_LIST.map((u,i)=>({...u,rowIndex:i+2}));
+  try {
+    const resp = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Users`,
+      { headers:{ Authorization:'Bearer '+token } }
+    );
+    const data = await resp.json();
+    const rows = data.values||[];
+    return rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map((r,i)=>({
+      email:r[0].trim(), role:r[1].trim(), fc:r[2].trim(),
+      addedBy:r[3]||'', addedOn:r[4]||'', rowIndex:i+2
+    }));
+  } catch(e){ return ACCESS_LIST.map((u,i)=>({...u,rowIndex:i+2})); }
+}
+
+async function renderUserPanel() {
+  const users = await fetchUsersForPanel();
+  const total = users.length;
+  const planCount = users.filter(u=>u.role==='Planning').length;
+  const fcCount   = users.filter(u=>u.role==='FC').length;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'up-overlay';
+  overlay.id = 'userPanelOverlay';
+  overlay.onclick = e=>{ if(e.target===overlay) overlay.remove(); };
+
+  const rows = users.map(u=>{
+    const isMaster = u.email.toLowerCase()===MASTER_EMAIL;
+    const roleCls  = u.role==='Planning'?'up-role-planning':'up-role-fc';
+    return `<tr>
+      <td style="font-weight:600;">${u.email}${isMaster?'<span class="up-master-badge">MASTER</span>':''}</td>
+      <td><span class="up-role-badge ${roleCls}">${u.role}</span></td>
+      <td><span class="up-fc-badge">${u.fc}</span></td>
+      <td style="color:var(--text3);font-size:11px;">${u.addedBy||'—'}</td>
+      <td style="color:var(--text3);font-size:11px;">${u.addedOn||'—'}</td>
+      <td>${isMaster
+        ?'<span style="font-size:10px;color:var(--text3);">🔒 Protected</span>'
+        :`<button class="up-remove-btn" onclick="removeUser('${u.email}')">Remove</button>`
+      }</td></tr>`;
+  }).join('');
+
+  overlay.innerHTML = `
+  <div class="up-modal">
+    <div class="up-header">
+      <div class="up-header-top">
+        <div class="up-header-icon">👥</div>
+        <div>
+          <div class="up-header-title">User Access Panel</div>
+          <div class="up-header-sub">Manage dashboard access · Only Planning role users can see this panel</div>
+        </div>
+      </div>
+    </div>
+    <button class="up-close" onclick="document.getElementById('userPanelOverlay').remove()">✕</button>
+    <div class="up-body">
+      <div class="up-stat-row">
+        <div class="up-stat"><div class="up-stat-num">${total}</div><div class="up-stat-lbl">Total Users</div></div>
+        <div class="up-stat"><div class="up-stat-num" style="color:#c2410c;">${planCount}</div><div class="up-stat-lbl">Planning</div></div>
+        <div class="up-stat"><div class="up-stat-num" style="color:#166534;">${fcCount}</div><div class="up-stat-lbl">FC Users</div></div>
+      </div>
+      <div class="up-section-title">Current Users</div>
+      <table class="up-table">
+        <thead><tr>
+          <th>Email</th><th>Role</th><th>FC Access</th><th>Added By</th><th>Added On</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="up-add-form">
+        <div class="up-add-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add New User
+        </div>
+        <div class="up-form-row">
+          <div class="up-form-group">
+            <label class="up-form-label">Email Address</label>
+            <input class="up-form-input" id="upEmailInput" type="email" placeholder="user@losung360.com"/>
+          </div>
+          <div class="up-form-group">
+            <label class="up-form-label">Role</label>
+            <select class="up-form-select" id="upRoleSelect" onchange="upToggleFC()">
+              <option value="Planning">Planning</option>
+              <option value="FC">FC</option>
+            </select>
+          </div>
+          <div class="up-form-group">
+            <label class="up-form-label">FC Access</label>
+            <select class="up-form-select" id="upFCSelect" disabled>
+              <option value="All">All FCs</option>
+              <option value="MUM">MUM</option>
+              <option value="HYD">HYD</option>
+              <option value="GGN">GGN</option>
+              <option value="KOL">KOL</option>
+              <option value="BNG">BNG</option>
+              <option value="CHE">CHE</option>
+              <option value="KOC">KOC</option>
+            </select>
+          </div>
+          <button class="up-add-btn" onclick="addUser()">+ Add User</button>
+        </div>
+        <div id="upMsg" class="up-msg"></div>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+function upToggleFC() {
+  const role = document.getElementById('upRoleSelect').value;
+  const fc   = document.getElementById('upFCSelect');
+  if (role==='Planning'){fc.value='All';fc.disabled=true;}else{fc.disabled=false;}
+}
+
+function upShowMsg(msg,ok){
+  const el=document.getElementById('upMsg');
+  if(!el)return;
+  el.textContent=msg; el.style.display='block';
+  el.style.background=ok?'#f0fdf4':'#fef2f2';
+  el.style.color=ok?'#166534':'#dc2626';
+  el.style.border=ok?'1px solid #bbf7d0':'1px solid #fecaca';
+  setTimeout(()=>{el.style.display='none';},3500);
+}
+
+async function addUser(){
+  const email=(document.getElementById('upEmailInput').value||'').trim().toLowerCase();
+  const role=document.getElementById('upRoleSelect').value;
+  const fc=role==='Planning'?'All':document.getElementById('upFCSelect').value;
+  if(!email||!email.includes('@')){upShowMsg('Please enter a valid email address.',false);return;}
+  const token=sessionStorage.getItem('gtoken');
+  if(!token){upShowMsg('Session expired — please log out and back in.',false);return;}
+  const now=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const addedBy=CURRENT_USER?CURRENT_USER.email:'';
+  try{
+    const resp=await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Users:append?valueInputOption=USER_ENTERED`,
+      {method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+       body:JSON.stringify({values:[[email,role,fc,addedBy,now]]})}
+    );
+    if(!resp.ok)throw new Error(await resp.text());
+    upShowMsg('✓ User added successfully!',true);
+    document.getElementById('upEmailInput').value='';
+    await loadAccessList();
+    setTimeout(()=>{const o=document.getElementById('userPanelOverlay');if(o){o.remove();renderUserPanel();}},1300);
+  }catch(e){console.error(e);upShowMsg('Failed to add. Check write permissions.',false);}
+}
+
+async function removeUser(email){
+  if(email.toLowerCase()===MASTER_EMAIL){alert('Master admin cannot be removed.');return;}
+  if(!confirm('Remove '+email+' from dashboard access?'))return;
+  const token=sessionStorage.getItem('gtoken');
+  if(!token){alert('Session expired.');return;}
+  try{
+    const r0=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Users`,
+      {headers:{Authorization:'Bearer '+token}});
+    const d=await r0.json(); const rows=d.values||[];
+    const ri=rows.findIndex((r,i)=>i>0&&r[0]&&r[0].trim().toLowerCase()===email.toLowerCase());
+    if(ri<1){alert('User not found.');return;}
+    const mr=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?fields=sheets.properties`,
+      {headers:{Authorization:'Bearer '+token}});
+    const md=await mr.json();
+    const sh=md.sheets.find(s=>s.properties.title==='Users');
+    if(!sh){alert('Users sheet not found.');return;}
+    const dr=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}:batchUpdate`,
+      {method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+       body:JSON.stringify({requests:[{deleteDimension:{range:{sheetId:sh.properties.sheetId,dimension:'ROWS',startIndex:ri,endIndex:ri+1}}}]})});
+    if(!dr.ok)throw new Error(await dr.text());
+    await loadAccessList();
+    const o=document.getElementById('userPanelOverlay');if(o){o.remove();renderUserPanel();}
+  }catch(e){console.error(e);alert('Failed to remove user.');}
 }
 
 function renderOps() {
