@@ -1004,6 +1004,8 @@ select:hover,select:focus{border-color:var(--orange);}
 /* ═══ INBOUND CONTROL PANEL v2 ═══ */
 // ── CONFIG ──────────────────────────────
 const SHEET_ID = '1SgelBlfese2hrxqjUm-ZcEAV7UQXuGmRg10B9ioB04I';
+const USERS_GID = '1029277024';
+const MASTER_EMAIL = 'planning@losung360.com';
 const SHEET_GID = '1596417357'; // Appointment Table tab GID from URL
 // Multiple fetch strategies — tries each in order until one works
 // Since sheet is "Published to web" + "Anyone can view", these URLs will work
@@ -2918,7 +2920,7 @@ function handleGoogleLogin() {
         client_id: GOOGLE_CLIENT_ID,
         scope: 'email profile',
         callback: (resp) => {
-          if (resp.access_token) fetchGoogleProfile(resp.access_token);
+          if (resp.access_token) { sessionStorage.setItem('gtoken', resp.access_token); fetchGoogleProfile(resp.access_token); }
         }
       }).requestAccessToken();
     }
