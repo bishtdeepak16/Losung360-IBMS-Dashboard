@@ -1926,7 +1926,26 @@ function openUserPanel() {
   if (drop) drop.classList.remove('open');
   const existing = document.getElementById('userPanelOverlay');
   if (existing) existing.remove();
-  renderUserPanel();
+  // If no write token stored, request a fresh one silently then open panel
+  if (!sessionStorage.getItem('gtoken')) {
+    try {
+      google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
+        prompt: '',
+        callback: (resp) => {
+          if (resp.access_token) {
+            sessionStorage.setItem('gtoken', resp.access_token);
+          }
+          renderUserPanel();
+        }
+      }).requestAccessToken({prompt:''});
+    } catch(e) {
+      renderUserPanel(); // open anyway, write ops will fail gracefully
+    }
+  } else {
+    renderUserPanel();
+  }
 }
 
 async function fetchUsersForPanel() {
@@ -2918,7 +2937,7 @@ function handleGoogleLogin() {
       // Fallback: open OAuth popup
       google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
-        scope: 'email profile',
+        scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
         callback: (resp) => {
           if (resp.access_token) { sessionStorage.setItem('gtoken', resp.access_token); fetchGoogleProfile(resp.access_token); }
         }
