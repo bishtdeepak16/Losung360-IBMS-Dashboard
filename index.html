@@ -2093,7 +2093,7 @@ async function addUser(){
     document.getElementById('upEmailInput').value='';
     await loadAccessList();
     setTimeout(()=>{const o=document.getElementById('userPanelOverlay');if(o){o.remove();renderUserPanel();}},1300);
-  }catch(e){console.error(e);upShowMsg('Failed to add. Check write permissions.',false);}
+  }catch(e){console.error(e);upShowMsg('Error: '+(e.message||String(e)).substring(0,80),false);}
 }
 
 async function removeUser(email){
@@ -2896,14 +2896,15 @@ const ACCESS_LIST = [
 
 // loadAccessList — reads live from Users sheet, falls back to ACCESS_LIST
 async function loadAccessList() {
+  // Sheet is always source of truth. Only master (planning@) hardcoded as fallback.
   const token = sessionStorage.getItem('gtoken');
-  if (!token) return; // no token yet, keep static list
+  if (!token) { console.warn('loadAccessList: no token yet'); return; }
   try {
     const resp = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Users`,
       { headers: { Authorization: 'Bearer ' + token } }
     );
-    if (!resp.ok) return; // fall back silently
+    if (!resp.ok) { console.warn('loadAccessList HTTP error:', resp.status); return; }
     const data = await resp.json();
     const rows = data.values || [];
     if (rows.length < 2) return;
@@ -2913,8 +2914,13 @@ async function loadAccessList() {
     if (loaded.length > 0) {
       ACCESS_LIST.length = 0;
       loaded.forEach(u => ACCESS_LIST.push(u));
+      // Master always present even if removed from sheet
+      if (!ACCESS_LIST.find(u => u.email === MASTER_EMAIL)) {
+        ACCESS_LIST.unshift({email: MASTER_EMAIL, role:'Planning', fc:'All'});
+      }
+      console.log('loadAccessList: loaded', ACCESS_LIST.length, 'users from sheet');
     }
-  } catch(e) { /* keep static fallback */ }
+  } catch(e) { console.warn('loadAccessList error:', e); }
 }
 
 let CURRENT_USER = null;  // {email, name, picture, role, fc}
@@ -2978,7 +2984,8 @@ function handleCredentialResponse(response) {
   try {
     const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
     const user = { email: payload.email, name: payload.name || payload.email.split('@')[0], picture: payload.picture || '' };
-    checkAccess(user);
+    // Load latest access list from sheet, then check access
+    loadAccessList().then(() => checkAccess(user));
   } catch(e) {
     showLoginError('Failed to read account info. Please try again.');
   }
@@ -2987,7 +2994,10 @@ function handleCredentialResponse(response) {
 function fetchGoogleProfile(token) {
   fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
     headers: { Authorization: 'Bearer ' + token }
-  }).then(r=>r.json()).then(data => {
+  }).then(r=>r.json()).then(async data => {
+    // Always load latest access list from sheet before checking
+    sessionStorage.setItem('gtoken', token);
+    await loadAccessList();
     checkAccess({ email: data.email, name: data.name || data.email, picture: data.picture || '' });
   }).catch(() => showLoginError('Failed to fetch account info. Please try again.'));
 }
