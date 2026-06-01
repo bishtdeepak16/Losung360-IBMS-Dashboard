@@ -2983,6 +2983,17 @@ function applyLogin(user) {
     drop.className = 'user-dropdown';
     drop.id = 'userDropdown';
     drop.onclick = e => e.stopPropagation();
+    const panelItem = (user.role === 'Planning') ? `
+      <div class="user-dropdown-item" onclick="openUserPanel()" style="color:var(--text1);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        User Panel
+      </div>
+      <div class="user-dropdown-sep"></div>` : '';
     drop.innerHTML = `
       <div class="user-dropdown-header">
         <div class="ud-name">${displayName}</div>
@@ -2990,6 +3001,7 @@ function applyLogin(user) {
         <span class="ud-role">${roleLabel}</span>
       </div>
       <div class="user-dropdown-sep"></div>
+      ${panelItem}
       <div class="user-dropdown-item signout" onclick="handleLogout()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
