@@ -1921,7 +1921,7 @@ function exportOpsKPI(type) {
 
 
 // ── User Panel ─────────────────────────────────────────────────────────────
-function openUserPanel() {
+async function openUserPanel() {
   const drop = document.getElementById('userDropdown');
   if (drop) drop.classList.remove('open');
   const existing = document.getElementById('userPanelOverlay');
@@ -1944,13 +1944,15 @@ function openUserPanel() {
       renderUserPanel(); // open anyway, write ops will fail gracefully
     }
   } else {
+    // Refresh ACCESS_LIST from sheet before rendering
+    await loadAccessList();
     renderUserPanel();
   }
 }
 
 async function fetchUsersForPanel() {
   const token = sessionStorage.getItem('gtoken');
-  if (!token) return ACCESS_LIST.map((u,i)=>({...u,rowIndex:i+2}));
+  if (!token) return ACCESS_LIST.map((u,i)=>({email:u.email,role:u.role,fc:u.fc,addedBy:'',addedOn:'',rowIndex:i+2}));
   try {
     const resp = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Users`,
@@ -1962,7 +1964,7 @@ async function fetchUsersForPanel() {
       email:r[0].trim(), role:r[1].trim(), fc:r[2].trim(),
       addedBy:r[3]||'', addedOn:r[4]||'', rowIndex:i+2
     }));
-  } catch(e){ return ACCESS_LIST.map((u,i)=>({...u,rowIndex:i+2})); }
+  } catch(e){ return ACCESS_LIST.map((u,i)=>({email:u.email,role:u.role,fc:u.fc,addedBy:'',addedOn:'',rowIndex:i+2})); }
 }
 
 async function renderUserPanel() {
@@ -2876,19 +2878,44 @@ function sidebarPreset(p) {
 // Authorised JavaScript origins: https://your-github-username.github.io
 const GOOGLE_CLIENT_ID = '820051261863-67psnut4rfhcaa89m9ejfttbmbnvt2ge.apps.googleusercontent.com';
 
+// Static fallback — used when sheet unavailable
 const ACCESS_LIST = [
-  {email:"planning@losung360.com",     role:"Planning", fc:"All"},
-  {email:"graju@losung360.com",        role:"FC",       fc:"HYD"},
-  {email:"venkatesh@losung360.com",    role:"FC",       fc:"CHE"},
-  {email:"veeresh.kumar@losung360.com",role:"FC",       fc:"BNG"},
-  {email:"sandeep.yadav@losung360.com",role:"FC",       fc:"GGN"},
-  {email:"ibkolalphalf@losung360.com", role:"FC",       fc:"KOL"},
-  {email:"ravi.kant@losung360.com",    role:"Planning", fc:"All"},
-  {email:"martin@losung360.com",       role:"FC",       fc:"KOC"},
-  {email:"nikhil.dnyaneshwar@losung360.com",role:"FC", fc:"MUM"},
-  {email:"vipin.patel@losung360.com",      role:"Planning", fc:"All"},
-  {email:"hassan.tahir@losung360.com",    role:"Planning", fc:"All"},
+  {email:"planning@losung360.com",          role:"Planning", fc:"All"},
+  {email:"graju@losung360.com",             role:"FC",       fc:"HYD"},
+  {email:"venkatesh@losung360.com",         role:"FC",       fc:"CHE"},
+  {email:"veeresh.kumar@losung360.com",     role:"FC",       fc:"BNG"},
+  {email:"sandeep.yadav@losung360.com",     role:"FC",       fc:"GGN"},
+  {email:"ibkolalphalf@losung360.com",      role:"FC",       fc:"KOL"},
+  {email:"ravi.kant@losung360.com",         role:"Planning", fc:"All"},
+  {email:"martin@losung360.com",            role:"FC",       fc:"KOC"},
+  {email:"nikhil.dnyaneshwar@losung360.com",role:"FC",       fc:"MUM"},
+  {email:"vipin.patel@losung360.com",       role:"Planning", fc:"All"},
+  {email:"hassan.tahir@losung360.com",      role:"Planning", fc:"All"},
+  {email:"deepak.bisht@losung360.com",      role:"Planning", fc:"All"},
 ];
+
+// loadAccessList — reads live from Users sheet, falls back to ACCESS_LIST
+async function loadAccessList() {
+  const token = sessionStorage.getItem('gtoken');
+  if (!token) return; // no token yet, keep static list
+  try {
+    const resp = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Users`,
+      { headers: { Authorization: 'Bearer ' + token } }
+    );
+    if (!resp.ok) return; // fall back silently
+    const data = await resp.json();
+    const rows = data.values || [];
+    if (rows.length < 2) return;
+    const loaded = rows.slice(1)
+      .filter(r => r[0] && r[1] && r[2])
+      .map(r => ({ email: r[0].trim().toLowerCase(), role: r[1].trim(), fc: r[2].trim() }));
+    if (loaded.length > 0) {
+      ACCESS_LIST.length = 0;
+      loaded.forEach(u => ACCESS_LIST.push(u));
+    }
+  } catch(e) { /* keep static fallback */ }
+}
 
 let CURRENT_USER = null;  // {email, name, picture, role, fc}
 
