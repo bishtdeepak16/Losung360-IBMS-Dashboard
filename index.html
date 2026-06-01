@@ -2232,9 +2232,19 @@ function renderOps() {
   const fcs=['MUM','HYD','GGN','KOL','BNG','CHE'];
   const tbody=document.getElementById('ops-fc-tbody');
   if (tbody) {
-    // Build all FC rows first for global ranking
-    const fcRows = fcs.map(fc => {
-      const rows = D.filter(r=>r['FC']===fc);
+    // Always compute global rankings from ALL_DATA (date-filtered but not FC-filtered)
+    // so FC-role users see their true global rank, not #1 just because they're filtered
+    const fcSel = getSelectedMs('fc');
+    // For ranking: use ALL fcs against the same date range but no FC filter
+    // We re-filter ALL_DATA by date only to get fair comparison
+    const globalD = ALL_DATA.filter(r => {
+      if (r['FC Code'] === 'TEST') return false;
+      if (dateFrom && r._schedDate && r._schedDate < dateFrom) return false;
+      if (dateTo && r._schedDate && r._schedDate > dateTo) return false;
+      return true;
+    });
+    const buildFCRow = (fc, dataset) => {
+      const rows = dataset.filter(r=>r['FC']===fc);
       if (!rows.length) return null;
       const completed = rows.filter(r=>r._gateOut&&r._gateIn);
       const gdMins = rows.filter(r=>r._onDock&&r._gateIn).map(r=>{const m=(r._onDock-r._gateIn)/60000;return m>0&&m<480?m:null;}).filter(Boolean);
@@ -2249,15 +2259,17 @@ function renderOps() {
       const dmgPct = totalUnits ? (dmg/totalUnits*100).toFixed(2)+'%' : '—';
       const sdPct = completed.length ? sameDay/completed.length*100 : 0;
       return {fc, rows, completed, gdHr, avgUL, avgTAT, avgMP, dmgPct, sdPct, sdNum};
-    }).filter(Boolean);
-    // Rank by same-day% across ALL FCs (global rank preserved even if filtered)
-    const allFcForRank = ['MUM','HYD','GGN','KOL','BNG','CHE'];
-    // Rank by same-day% from visible filtered data, descending
-    const allRankData = [...fcRows].sort((a,b)=>b.sdNum-a.sdNum);
+    };
+    // Step 1: compute global rank using ALL fcs (no FC filter)
+    const globalRows = fcs.map(fc => buildFCRow(fc, globalD)).filter(Boolean);
+    const allRankData = [...globalRows].sort((a,b)=>b.sdNum-a.sdNum);
     const rankMap = {};
     allRankData.forEach((d,i)=>{ rankMap[d.fc]=i+1; });
-    // Sort visible rows by rank
-    fcRows.sort((a,b)=>rankMap[a.fc]-rankMap[b.fc]);
+    // Step 2: visible rows = only FCs in current filter (for FC-role: just their FC)
+    const visibleFCs = fcSel || fcs;
+    const fcRows = visibleFCs.map(fc => buildFCRow(fc, D)).filter(Boolean);
+    // Sort by global rank
+    fcRows.sort((a,b)=>(rankMap[a.fc]||99)-(rankMap[b.fc]||99));
     tbody.innerHTML = fcRows.map(d => {
       const {fc,rows,completed,gdHr,avgUL,avgTAT,avgMP,dmgPct,sdPct,sdNum} = d;
       const rank = rankMap[fc] || '—';
