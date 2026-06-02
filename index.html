@@ -1927,10 +1927,7 @@ async function openUserPanel() {
   if (drop) drop.classList.remove('open');
   const existing = document.getElementById('userPanelOverlay');
   if (existing) existing.remove();
-
-  // Always get a fresh OAuth token before opening the panel.
-  // This handles: (a) token never obtained, (b) token expired after ~1hr.
-  // prompt:'' = silent grant — no popup if user already consented this session.
+  // Always get a fresh token before opening — handles missing + expired tokens
   const userEmail = CURRENT_USER ? CURRENT_USER.email : '';
   try {
     google.accounts.oauth2.initTokenClient({
@@ -1941,14 +1938,13 @@ async function openUserPanel() {
       callback: async (resp) => {
         if (resp && resp.access_token) {
           sessionStorage.setItem('gtoken', resp.access_token);
-          await loadAccessList(); // sheet is primary source — always reload
+          await loadAccessList();
         }
         renderUserPanel();
       }
     }).requestAccessToken({prompt: ''});
   } catch(e) {
-    // GSI not available — try existing token + fallback gracefully
-    console.warn('openUserPanel: token refresh failed, using existing token:', e);
+    console.warn('openUserPanel: token refresh failed:', e);
     await loadAccessList();
     renderUserPanel();
   }
@@ -1956,27 +1952,36 @@ async function openUserPanel() {
 
 async function fetchUsersForPanel() {
   const token = sessionStorage.getItem('gtoken');
-  const fallback = ACCESS_LIST.map((u,i)=>{
+  if (token) {
+    try {
+      const resp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
+        { headers:{ Authorization:'Bearer '+token } }
+      );
+      if (resp.ok) {
+        const data = await resp.json();
+        const rows = data.values||[];
+        const sheetUsers = rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map((r,i)=>({
+          email:r[0].trim(), role:r[1].trim(),
+          fc:(r[2]||'All').trim(), views:(r[3]||'All').trim(),
+          addedBy:r[4]||'', addedOn:r[5]||'', rowIndex:i+2
+        }));
+        ACCESS_LIST.length = 0;
+        sheetUsers.forEach(u => ACCESS_LIST.push({
+          email: u.email, role: u.role,
+          fc: u.fc==='All' ? ['All'] : u.fc.split(',').map(s=>s.trim()),
+          views: u.views==='All' ? ['CXO','Planner','Ops'] : u.views.split(',').map(s=>s.trim())
+        }));
+        console.log('fetchUsersForPanel: loaded', sheetUsers.length, 'users from sheet');
+        return sheetUsers;
+      }
+    } catch(e){ console.warn('fetchUsersForPanel sheet fetch failed, using fallback:', e); }
+  }
+  return ACCESS_LIST.map((u,i)=>{
     const fcStr = Array.isArray(u.fc)?u.fc.join(','):u.fc||'All';
     const vStr  = Array.isArray(u.views)?u.views.join(','):'All';
     return {email:u.email,role:u.role,fc:fcStr,views:vStr,addedBy:'',addedOn:'',rowIndex:i+2};
   });
-  if (!token) return fallback;
-  try {
-    const resp = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
-      { headers:{ Authorization:'Bearer '+token } }
-    );
-    const data = await resp.json();
-    const rows = data.values||[];
-    return rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map((r,i)=>{
-      return {
-        email:r[0].trim(), role:r[1].trim(),
-        fc:(r[2]||'All').trim(), views:(r[3]||'All').trim(),
-        addedBy:r[4]||'', addedOn:r[5]||'', rowIndex:i+2
-      };
-    });
-  } catch(e){ return fallback; }
 }
 
 async function renderUserPanel() {
@@ -2223,7 +2228,6 @@ function upShowMsg(msg,ok){
 }
 
 // Always get a fresh OAuth access token before any write operation.
-// Silently refreshes if already consented this session.
 function getFreshToken() {
   return new Promise((resolve) => {
     const userEmail = CURRENT_USER ? CURRENT_USER.email : '';
@@ -2234,17 +2238,11 @@ function getFreshToken() {
         hint: userEmail,
         prompt: '',
         callback: (resp) => {
-          if (resp && resp.access_token) {
-            sessionStorage.setItem('gtoken', resp.access_token);
-            resolve(resp.access_token);
-          } else {
-            resolve(sessionStorage.getItem('gtoken')); // fallback
-          }
+          if (resp && resp.access_token) { sessionStorage.setItem('gtoken', resp.access_token); resolve(resp.access_token); }
+          else resolve(sessionStorage.getItem('gtoken'));
         }
       }).requestAccessToken({prompt: ''});
-    } catch(e) {
-      resolve(sessionStorage.getItem('gtoken')); // fallback to stored
-    }
+    } catch(e) { resolve(sessionStorage.getItem('gtoken')); }
   });
 }
 
@@ -3165,12 +3163,10 @@ function handleGoogleLogin() {
 }
 
 function handleCredentialResponse(response) {
-  // Decode JWT id_token to get email and name
   try {
     const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
     const user = { email: payload.email, name: payload.name || payload.email.split('@')[0], picture: payload.picture || '' };
-    // Also get an OAuth access token (needed for Sheets API read/write)
-    // Use prompt:'' for silent grant — user already consented via Sign-In button
+    // Get OAuth access token silently (needed for Sheets API)
     try {
       google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
@@ -3178,17 +3174,13 @@ function handleCredentialResponse(response) {
         hint: user.email,
         prompt: '',
         callback: async (resp) => {
-          if (resp && resp.access_token) {
-            sessionStorage.setItem('gtoken', resp.access_token);
-          }
-          // loadAccessList needs gtoken — now it will work
+          if (resp && resp.access_token) sessionStorage.setItem('gtoken', resp.access_token);
           await loadAccessList();
           checkAccess(user);
         }
       }).requestAccessToken({prompt: ''});
     } catch(tokenErr) {
-      // Fallback: proceed without write token (read-only panel, add/edit will warn)
-      console.warn('Could not get OAuth access token silently:', tokenErr);
+      console.warn('Could not get OAuth token silently:', tokenErr);
       loadAccessList().then(() => checkAccess(user));
     }
   } catch(e) {
@@ -3217,7 +3209,8 @@ function checkAccess(user) {
   if (!Array.isArray(entry.fc)) entry.fc = entry.fc==='All'?['All']:[entry.fc];
   if (!Array.isArray(entry.views)||!entry.views.length) entry.views=['CXO','Planner','Ops'];
   if (entry.role==='Planning') entry.views=['CXO','Planner','Ops'];
-  const fullUser = { ...user, role: entry.role, fc: entry.fc };
+  // FIXED: include views in fullUser so applyViewRestrictions receives them
+  const fullUser = { ...user, role: entry.role, fc: entry.fc, views: entry.views };
   sessionStorage.setItem('ibms_user', JSON.stringify(fullUser));
   applyLogin(fullUser);
 }
