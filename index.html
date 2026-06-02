@@ -1004,7 +1004,6 @@ select:hover,select:focus{border-color:var(--orange);}
 /* ═══ INBOUND CONTROL PANEL v2 ═══ */
 // ── CONFIG ──────────────────────────────
 const SHEET_ID = '1SgelBlfese2hrxqjUm-ZcEAV7UQXuGmRg10B9ioB04I';
-const USERS_SHEET_ID = '1Fdp5T5WMZNv6Ggwqr4ulVuIgteu0b_Q8rf77pF4d32s';
 const USERS_GID = '1029277024';
 const MASTER_EMAIL = 'planning@losung360.com';
 const SHEET_GID = '1596417357'; // Appointment Table tab GID from URL
@@ -1927,65 +1926,45 @@ async function openUserPanel() {
   if (drop) drop.classList.remove('open');
   const existing = document.getElementById('userPanelOverlay');
   if (existing) existing.remove();
-  // Always request a fresh token (prompt:none = silent if already consented)
-  try {
-    google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
-      callback: async (resp) => {
-        if (resp && resp.access_token) {
-          sessionStorage.setItem('gtoken', resp.access_token);
+  // If no write token stored, request a fresh one silently then open panel
+  if (!sessionStorage.getItem('gtoken')) {
+    try {
+      google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
+        prompt: '',
+        callback: (resp) => {
+          if (resp.access_token) {
+            sessionStorage.setItem('gtoken', resp.access_token);
+          }
+          renderUserPanel();
         }
-        renderUserPanel();
-      }
-    }).requestAccessToken({prompt: 'none'});
-  } catch(e) {
-    // Fallback: try with existing token or open with static data
+      }).requestAccessToken({prompt:''});
+    } catch(e) {
+      renderUserPanel(); // open anyway, write ops will fail gracefully
+    }
+  } else {
+    // Refresh ACCESS_LIST from sheet before rendering
+    await loadAccessList();
     renderUserPanel();
   }
 }
 
 async function fetchUsersForPanel() {
   const token = sessionStorage.getItem('gtoken');
-  if (!token) {
-    console.warn('fetchUsersForPanel: no token, showing static fallback');
-    return ACCESS_LIST.map((u,i)=>({
-      email:u.email, role:u.role,
-      fc:Array.isArray(u.fc)?u.fc.join(','):(u.fc||'All'),
-      views:Array.isArray(u.views)?u.views.join(','):'All',
-      addedBy:'', addedOn:'', rowIndex:i+2
-    }));
-  }
+  if (!token) return ACCESS_LIST.map((u,i)=>({email:u.email,role:u.role,fc:u.fc,addedBy:'',addedOn:'',rowIndex:i+2}));
   try {
     const resp = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Users`,
       { headers:{ Authorization:'Bearer '+token } }
     );
-    if (!resp.ok) {
-      console.warn('fetchUsersForPanel HTTP', resp.status, await resp.text());
-      return ACCESS_LIST.map((u,i)=>({
-        email:u.email, role:u.role,
-        fc:Array.isArray(u.fc)?u.fc.join(','):(u.fc||'All'),
-        views:Array.isArray(u.views)?u.views.join(','):'All',
-        addedBy:'', addedOn:'', rowIndex:i+2
-      }));
-    }
     const data = await resp.json();
     const rows = data.values||[];
-    console.log('fetchUsersForPanel: got', rows.length, 'rows');
-    if (rows.length < 2) {
-      console.warn('fetchUsersForPanel: sheet has < 2 rows');
-      return [];
-    }
     return rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map((r,i)=>({
-      email:r[0].trim(), role:r[1].trim(),
-      fc:(r[2]||'All').trim(), views:(r[3]||'All').trim(),
-      addedBy:r[4]||'', addedOn:r[5]||'', rowIndex:i+2
+      email:r[0].trim(), role:r[1].trim(), fc:r[2].trim(),
+      addedBy:r[3]||'', addedOn:r[4]||'', rowIndex:i+2
     }));
-  } catch(e){
-    console.error('fetchUsersForPanel error:', e);
-    return [];
-  }
+  } catch(e){ return ACCESS_LIST.map((u,i)=>({email:u.email,role:u.role,fc:u.fc,addedBy:'',addedOn:'',rowIndex:i+2})); }
 }
 
 async function renderUserPanel() {
@@ -1993,55 +1972,26 @@ async function renderUserPanel() {
   const total = users.length;
   const planCount = users.filter(u=>u.role==='Planning').length;
   const fcCount   = users.filter(u=>u.role==='FC').length;
-  const ALL_FCS = ['MUM','HYD','GGN','KOL','BNG','CHE','KOC'];
-  const ALL_VIEWS = ['CXO','Planner','Ops'];
 
   const overlay = document.createElement('div');
   overlay.className = 'up-overlay';
   overlay.id = 'userPanelOverlay';
   overlay.onclick = e=>{ if(e.target===overlay) overlay.remove(); };
 
-  function fcBadges(fcStr) {
-    const parts = fcStr==='All' ? ['All'] : fcStr.split(',').map(s=>s.trim());
-    return parts.map(f=>`<span class="up-fc-badge">${f}</span>`).join(' ');
-  }
-  function viewBadges(vStr) {
-    const parts = (!vStr||vStr==='All') ? ['CXO','Planner','Ops'] : vStr.split(',').map(s=>s.trim());
-    const cols = {CXO:'#6366f1',Planner:'#f97316',Ops:'#16a34a'};
-    return parts.map(v=>`<span style="font-size:10px;font-weight:700;color:${cols[v]||'#888'};background:${cols[v]||'#888'}18;border:1px solid ${cols[v]||'#888'}44;padding:2px 7px;border-radius:20px;">${v}</span>`).join(' ');
-  }
-
   const rows = users.map(u=>{
     const isMaster = u.email.toLowerCase()===MASTER_EMAIL;
     const roleCls  = u.role==='Planning'?'up-role-planning':'up-role-fc';
-    return `<tr id="upr-${u.rowIndex}">
-      <td style="font-weight:600;font-size:11px;">${u.email}${isMaster?'<span class="up-master-badge">MASTER</span>':''}</td>
+    return `<tr>
+      <td style="font-weight:600;">${u.email}${isMaster?'<span class="up-master-badge">MASTER</span>':''}</td>
       <td><span class="up-role-badge ${roleCls}">${u.role}</span></td>
-      <td>${fcBadges(u.fc)}</td>
-      <td>${viewBadges(u.views)}</td>
-      <td style="color:var(--text3);font-size:10px;">${u.addedBy||'—'}</td>
-      <td style="white-space:nowrap;">
-        ${isMaster
-          ? '<span style="font-size:10px;color:var(--text3);">🔒 Protected</span>'
-          : `<button class="up-remove-btn" style="margin-right:4px;" onclick="editUser(${JSON.stringify(u).replace(/"/g,'&quot;')})">Edit</button><button class="up-remove-btn" onclick="removeUser('${u.email}')">Remove</button>`
-        }
-      </td>
-    </tr>`;
+      <td><span class="up-fc-badge">${u.fc}</span></td>
+      <td style="color:var(--text3);font-size:11px;">${u.addedBy||'—'}</td>
+      <td style="color:var(--text3);font-size:11px;">${u.addedOn||'—'}</td>
+      <td>${isMaster
+        ?'<span style="font-size:10px;color:var(--text3);">🔒 Protected</span>'
+        :`<button class="up-remove-btn" onclick="removeUser('${u.email}')">Remove</button>`
+      }</td></tr>`;
   }).join('');
-
-  // Build FC checkboxes for Add form
-  const fcCheckboxes = ALL_FCS.map(fc=>
-    `<label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;margin-right:8px;">
-      <input type="checkbox" class="up-fc-cb" value="${fc}" disabled style="cursor:pointer;"> ${fc}
-    </label>`
-  ).join('');
-
-  // Build Views checkboxes
-  const viewCheckboxes = ALL_VIEWS.map(v=>
-    `<label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;margin-right:8px;">
-      <input type="checkbox" class="up-view-cb" value="${v}" checked> ${v}
-    </label>`
-  ).join('');
 
   overlay.innerHTML = `
   <div class="up-modal">
@@ -2064,50 +2014,16 @@ async function renderUserPanel() {
       <div class="up-section-title">Current Users</div>
       <table class="up-table">
         <thead><tr>
-          <th>Email</th><th>Role</th><th>FC Access</th><th>Views</th><th>Added By</th><th></th>
+          <th>Email</th><th>Role</th><th>FC Access</th><th>Added By</th><th>Added On</th><th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
-
-      <!-- Edit User Form (hidden by default) -->
-      <div id="upEditForm" style="display:none;background:rgba(99,102,241,.06);border:1.5px solid rgba(99,102,241,.2);border-radius:14px;padding:16px 20px;margin-bottom:16px;">
-        <div style="font-size:12px;font-weight:700;color:var(--text1);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-          ✏️ Edit User: <span id="upEditEmail" style="color:#6366f1;"></span>
-        </div>
-        <div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:14px;align-items:start;">
-          <div class="up-form-group">
-            <label class="up-form-label">Role</label>
-            <select class="up-form-select" id="upEditRole" onchange="upEditToggleFC()">
-              <option value="Planning">Planning</option>
-              <option value="FC">FC</option>
-            </select>
-          </div>
-          <div class="up-form-group">
-            <label class="up-form-label">FC Access (multi-select, max 4)</label>
-            <div style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 0;" id="upEditFCWrap">
-              ${ALL_FCS.map(fc=>`<label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;background:var(--card-border);padding:3px 8px;border-radius:20px;"><input type="checkbox" class="up-edit-fc-cb" value="${fc}"> ${fc}</label>`).join('')}
-            </div>
-          </div>
-          <div class="up-form-group">
-            <label class="up-form-label">Views</label>
-            <div style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 0;" id="upEditViewWrap">
-              ${ALL_VIEWS.map(v=>`<label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;background:var(--card-border);padding:3px 8px;border-radius:20px;"><input type="checkbox" class="up-edit-view-cb" value="${v}"> ${v}</label>`).join('')}
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:12px;">
-          <button class="up-add-btn" onclick="saveEditUser()" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">💾 Save Changes</button>
-          <button onclick="document.getElementById('upEditForm').style.display='none'" style="padding:8px 16px;border:1.5px solid var(--card-border);border-radius:10px;background:var(--card-bg);cursor:pointer;font-size:12px;">Cancel</button>
-        </div>
-        <div id="upEditMsg" class="up-msg"></div>
-      </div>
-
       <div class="up-add-form">
         <div class="up-add-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add New User
         </div>
-        <div style="display:grid;grid-template-columns:1fr 140px;gap:12px;margin-bottom:10px;">
+        <div class="up-form-row">
           <div class="up-form-group">
             <label class="up-form-label">Email Address</label>
             <input class="up-form-input" id="upEmailInput" type="email" placeholder="user@losung360.com"/>
@@ -2119,22 +2035,21 @@ async function renderUserPanel() {
               <option value="FC">FC</option>
             </select>
           </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
           <div class="up-form-group">
-            <label class="up-form-label">FC Access (max 4, disabled for Planning)</label>
-            <div style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 0;">
-              ${fcCheckboxes}
-            </div>
+            <label class="up-form-label">FC Access</label>
+            <select class="up-form-select" id="upFCSelect" disabled>
+              <option value="All">All FCs</option>
+              <option value="MUM">MUM</option>
+              <option value="HYD">HYD</option>
+              <option value="GGN">GGN</option>
+              <option value="KOL">KOL</option>
+              <option value="BNG">BNG</option>
+              <option value="CHE">CHE</option>
+              <option value="KOC">KOC</option>
+            </select>
           </div>
-          <div class="up-form-group">
-            <label class="up-form-label">Views (auto=All for Planning)</label>
-            <div style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 0;">
-              ${viewCheckboxes}
-            </div>
-          </div>
+          <button class="up-add-btn" onclick="addUser()">+ Add User</button>
         </div>
-        <button class="up-add-btn" onclick="addUser()">+ Add User</button>
         <div id="upMsg" class="up-msg"></div>
       </div>
     </div>
@@ -2144,81 +2059,8 @@ async function renderUserPanel() {
 
 function upToggleFC() {
   const role = document.getElementById('upRoleSelect').value;
-  const cbs = document.querySelectorAll('.up-fc-cb');
-  const vCbs = document.querySelectorAll('.up-view-cb');
-  if (role==='Planning') {
-    cbs.forEach(cb=>{ cb.checked=false; cb.disabled=true; });
-    vCbs.forEach(cb=>{ cb.checked=true; cb.disabled=true; });
-  } else {
-    cbs.forEach(cb=>{ cb.disabled=false; });
-    vCbs.forEach(cb=>{ cb.disabled=false; });
-  }
-}
-
-let _editingUser = null;
-function editUser(u) {
-  _editingUser = u;
-  const form = document.getElementById('upEditForm');
-  document.getElementById('upEditEmail').textContent = u.email;
-  document.getElementById('upEditRole').value = u.role;
-  const fcParts = u.fc==='All' ? [] : u.fc.split(',').map(s=>s.trim());
-  document.querySelectorAll('.up-edit-fc-cb').forEach(cb=>{
-    cb.checked = fcParts.includes(cb.value);
-    cb.disabled = u.role==='Planning';
-  });
-  const vParts = (!u.views||u.views==='All') ? ['CXO','Planner','Ops'] : u.views.split(',').map(s=>s.trim());
-  document.querySelectorAll('.up-edit-view-cb').forEach(cb=>{
-    cb.checked = u.role==='Planning' ? true : vParts.includes(cb.value);
-    cb.disabled = u.role==='Planning';
-  });
-  form.style.display='block';
-  form.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
-function upEditToggleFC() {
-  const role = document.getElementById('upEditRole').value;
-  document.querySelectorAll('.up-edit-fc-cb').forEach(cb=>{ cb.disabled=role==='Planning'; if(role==='Planning')cb.checked=false; });
-  document.querySelectorAll('.up-edit-view-cb').forEach(cb=>{ cb.disabled=role==='Planning'; if(role==='Planning')cb.checked=true; });
-}
-
-async function saveEditUser() {
-  const u = _editingUser;
-  if (!u) return;
-  const token = sessionStorage.getItem('gtoken');
-  if (!token) { document.getElementById('upEditMsg').textContent='Session expired.'; return; }
-  const role = document.getElementById('upEditRole').value;
-  const selFCs = role==='Planning' ? 'All'
-    : Array.from(document.querySelectorAll('.up-edit-fc-cb:checked')).map(c=>c.value).join(',') || 'All';
-  const selViews = role==='Planning' ? 'All'
-    : Array.from(document.querySelectorAll('.up-edit-view-cb:checked')).map(c=>c.value).join(',') || 'All';
-  // Find row index in sheet
-  try {
-    const resp0 = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
-      {headers:{Authorization:'Bearer '+token}});
-    const d = await resp0.json(); const rows = d.values||[];
-    const ri = rows.findIndex((r,i)=>i>0&&r[0]&&r[0].trim().toLowerCase()===u.email.toLowerCase());
-    if (ri<1){upShowMsg2('User not found in sheet.',false);return;}
-    const range = `Users!A${ri+1}:F${ri+1}`;
-    const now = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-    const upResp = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/${range}?valueInputOption=USER_ENTERED`,
-      {method:'PUT', headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-       body:JSON.stringify({values:[[u.email, role, selFCs, selViews, rows[ri][4]||'', rows[ri][5]||'']]})});
-    if (!upResp.ok) throw new Error(await upResp.text());
-    upShowMsg2('✓ User updated!', true);
-    await loadAccessList();
-    setTimeout(()=>{document.getElementById('userPanelOverlay').remove(); renderUserPanel();},1200);
-  } catch(e){upShowMsg2('Error: '+e.message.substring(0,60),false);}
-}
-
-function upShowMsg2(msg,ok){
-  const el=document.getElementById('upEditMsg');
-  if(!el)return;
-  el.textContent=msg; el.style.display='block';
-  el.style.background=ok?'#f0fdf4':'#fef2f2';
-  el.style.color=ok?'#166534':'#dc2626';
-  el.style.border=ok?'1px solid #bbf7d0':'1px solid #fecaca';
-  setTimeout(()=>{el.style.display='none';},3500);
+  const fc   = document.getElementById('upFCSelect');
+  if (role==='Planning'){fc.value='All';fc.disabled=true;}else{fc.disabled=false;}
 }
 
 function upShowMsg(msg,ok){
@@ -2234,10 +2076,7 @@ function upShowMsg(msg,ok){
 async function addUser(){
   const email=(document.getElementById('upEmailInput').value||'').trim().toLowerCase();
   const role=document.getElementById('upRoleSelect').value;
-  const selFCs = role==='Planning' ? 'All'
-    : Array.from(document.querySelectorAll('.up-fc-cb:checked')).map(c=>c.value).slice(0,4).join(',') || 'All';
-  const selViews = role==='Planning' ? 'All'
-    : Array.from(document.querySelectorAll('.up-view-cb:checked')).map(c=>c.value).join(',') || 'All';
+  const fc=role==='Planning'?'All':document.getElementById('upFCSelect').value;
   if(!email||!email.includes('@')){upShowMsg('Please enter a valid email address.',false);return;}
   const token=sessionStorage.getItem('gtoken');
   if(!token){upShowMsg('Session expired — please log out and back in.',false);return;}
@@ -2245,9 +2084,9 @@ async function addUser(){
   const addedBy=CURRENT_USER?CURRENT_USER.email:'';
   try{
     const resp=await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users:append?valueInputOption=USER_ENTERED`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Users:append?valueInputOption=USER_ENTERED`,
       {method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-       body:JSON.stringify({values:[[email,role,selFCs,selViews,addedBy,now]]})}
+       body:JSON.stringify({values:[[email,role,fc,addedBy,now]]})}
     );
     if(!resp.ok)throw new Error(await resp.text());
     upShowMsg('✓ User added successfully!',true);
@@ -2263,17 +2102,17 @@ async function removeUser(email){
   const token=sessionStorage.getItem('gtoken');
   if(!token){alert('Session expired.');return;}
   try{
-    const r0=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
+    const r0=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Users`,
       {headers:{Authorization:'Bearer '+token}});
     const d=await r0.json(); const rows=d.values||[];
     const ri=rows.findIndex((r,i)=>i>0&&r[0]&&r[0].trim().toLowerCase()===email.toLowerCase());
     if(ri<1){alert('User not found.');return;}
-    const mr=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}?fields=sheets.properties`,
+    const mr=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?fields=sheets.properties`,
       {headers:{Authorization:'Bearer '+token}});
     const md=await mr.json();
     const sh=md.sheets.find(s=>s.properties.title==='Users');
     if(!sh){alert('Users sheet not found.');return;}
-    const dr=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}:batchUpdate`,
+    const dr=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}:batchUpdate`,
       {method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
        body:JSON.stringify({requests:[{deleteDimension:{range:{sheetId:sh.properties.sheetId,dimension:'ROWS',startIndex:ri,endIndex:ri+1}}}]})});
     if(!dr.ok)throw new Error(await dr.text());
@@ -3051,41 +2890,47 @@ function sidebarPreset(p) {
 // Authorised JavaScript origins: https://your-github-username.github.io
 const GOOGLE_CLIENT_ID = '820051261863-67psnut4rfhcaa89m9ejfttbmbnvt2ge.apps.googleusercontent.com';
 
-// Sheet is always source of truth. Only master hardcoded as fallback.
+// Static fallback — used when sheet unavailable
 const ACCESS_LIST = [
-  {email:"planning@losung360.com", role:"Planning", fc:["All"], views:["CXO","Planner","Ops"]}
+  {email:"planning@losung360.com",          role:"Planning", fc:"All"},
+  {email:"graju@losung360.com",             role:"FC",       fc:"HYD"},
+  {email:"venkatesh@losung360.com",         role:"FC",       fc:"CHE"},
+  {email:"veeresh.kumar@losung360.com",     role:"FC",       fc:"BNG"},
+  {email:"sandeep.yadav@losung360.com",     role:"FC",       fc:"GGN"},
+  {email:"ibkolalphalf@losung360.com",      role:"FC",       fc:"KOL"},
+  {email:"ravi.kant@losung360.com",         role:"Planning", fc:"All"},
+  {email:"martin@losung360.com",            role:"FC",       fc:"KOC"},
+  {email:"nikhil.dnyaneshwar@losung360.com",role:"FC",       fc:"MUM"},
+  {email:"vipin.patel@losung360.com",       role:"Planning", fc:"All"},
+  {email:"hassan.tahir@losung360.com",      role:"Planning", fc:"All"},
+  {email:"deepak.bisht@losung360.com",      role:"Planning", fc:"All"},
 ];
 
 // loadAccessList — reads live from Users sheet, falls back to ACCESS_LIST
 async function loadAccessList() {
-  // Reads from IBMS Users sheet (separate from appointment data sheet)
+  // Sheet is always source of truth. Only master (planning@) hardcoded as fallback.
   const token = sessionStorage.getItem('gtoken');
-  if (!token) { console.warn('loadAccessList: no token'); return; }
+  if (!token) { console.warn('loadAccessList: no token yet'); return; }
   try {
     const resp = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Users`,
       { headers: { Authorization: 'Bearer ' + token } }
     );
     if (!resp.ok) { console.warn('loadAccessList HTTP error:', resp.status); return; }
     const data = await resp.json();
     const rows = data.values || [];
     if (rows.length < 2) return;
-    // Columns: Email(0) Role(1) FC(2) Views(3) AddedBy(4) AddedOn(5)
-    const loaded = rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map(r=>{
-      const fcRaw   = (r[2]||'All').trim();
-      const viewRaw = (r[3]||'All').trim();
-      const fcs   = fcRaw==='All'   ? ['All'] : fcRaw.split(',').map(s=>s.trim()).filter(Boolean);
-      const views = viewRaw==='All' ? ['CXO','Planner','Ops']
-                                    : viewRaw.split(',').map(s=>s.trim()).filter(Boolean);
-      return { email:r[0].trim().toLowerCase(), role:r[1].trim(), fc:fcs, views };
-    });
+    const loaded = rows.slice(1)
+      .filter(r => r[0] && r[1] && r[2])
+      .map(r => ({ email: r[0].trim().toLowerCase(), role: r[1].trim(), fc: r[2].trim() }));
     if (loaded.length > 0) {
       ACCESS_LIST.length = 0;
       loaded.forEach(u => ACCESS_LIST.push(u));
-      if (!ACCESS_LIST.find(u=>u.email===MASTER_EMAIL)) {
-        ACCESS_LIST.unshift({email:MASTER_EMAIL, role:'Planning', fc:['All'], views:['CXO','Planner','Ops']});
+      // Master always present even if removed from sheet
+      if (!ACCESS_LIST.find(u => u.email === MASTER_EMAIL)) {
+        ACCESS_LIST.unshift({email: MASTER_EMAIL, role:'Planning', fc:'All'});
       }
-      console.log('loadAccessList: loaded', ACCESS_LIST.length, 'users from IBMS Users sheet');
+      console.log('loadAccessList: loaded', ACCESS_LIST.length, 'users from sheet');
     }
   } catch(e) { console.warn('loadAccessList error:', e); }
 }
@@ -3175,10 +3020,6 @@ function checkAccess(user) {
     showLoginError(`Access denied. "${user.email}" is not authorised to use this dashboard.`);
     return;
   }
-  // Normalise fc and views to arrays
-  if (!Array.isArray(entry.fc)) entry.fc = entry.fc==='All'?['All']:[entry.fc];
-  if (!Array.isArray(entry.views)||!entry.views.length) entry.views=['CXO','Planner','Ops'];
-  if (entry.role==='Planning') entry.views=['CXO','Planner','Ops'];
   const fullUser = { ...user, role: entry.role, fc: entry.fc };
   sessionStorage.setItem('ibms_user', JSON.stringify(fullUser));
   applyLogin(fullUser);
@@ -3248,70 +3089,40 @@ function applyLogin(user) {
     hr.appendChild(wrap);
   }
 
-  if (user.role === 'FC') {
-    const fcs = Array.isArray(user.fc) ? user.fc : [user.fc];
-    if (!fcs.includes('All')) lockFCFilter(fcs);
-  }
-  applyViewRestrictions(user);
+  if (user.role === 'FC' && user.fc !== 'All') lockFCFilter(user.fc);
   fetchData();
 }
 
-function lockFCFilter(fcCodes) {
-  if (!Array.isArray(fcCodes)) fcCodes = [fcCodes];
+function lockFCFilter(fcCode) {
+  // Uncheck all FC checkboxes, check only user's FC, and DISABLE the entire dropdown
   const cbs = document.querySelectorAll('.fc-cb');
-  cbs.forEach(cb => { cb.checked = fcCodes.includes(cb.value.trim()); cb.disabled = true; });
+  cbs.forEach(cb => {
+    cb.checked = (cb.value.trim() === fcCode);
+    cb.disabled = true;
+  });
   const allCb = document.getElementById('fcAll');
   if (allCb) { allCb.checked = false; allCb.disabled = true; }
-  const label = fcCodes.join(', ');
+
+  // Show locked badge next to FC filter button
   const fcBtn = document.getElementById('fcBtn');
   if (fcBtn) {
-    fcBtn.textContent = label + ' ▾';
+    fcBtn.textContent = fcCode + ' ▾';
     fcBtn.style.color = '#16a34a';
     fcBtn.style.borderColor = '#bbf7d0';
     fcBtn.style.background = '#ecfdf5';
-    fcBtn.title = 'FC filter locked to ' + label;
-    fcBtn.onclick = null;
+    fcBtn.title = 'FC filter locked to ' + fcCode;
+    fcBtn.onclick = null; // disable opening the dropdown
     fcBtn.style.cursor = 'not-allowed';
   }
+
+  // Also lock the appt type filter to show note  
   const filterRow = document.getElementById('sharedFilterRow');
   if (filterRow) {
-    const old = filterRow.querySelector('.fc-locked-badge');
-    if (old) old.remove();
     const badge = document.createElement('span');
     badge.className = 'fc-locked-badge';
-    badge.innerHTML = '🔒 Viewing: ' + label + ' only';
+    badge.innerHTML = '🔒 Viewing: ' + fcCode + ' only';
     filterRow.appendChild(badge);
   }
-}
-
-function applyViewRestrictions(user) {
-  if (user.role === 'Planning') return; // full access always
-  const views = Array.isArray(user.views) ? user.views : ['CXO','Planner','Ops'];
-  const navMap   = {CXO:'navCxo', Planner:'navPlan', Ops:'navOps'};
-  const pageMap  = {CXO:'cxo',    Planner:'plan',    Ops:'ops'};
-  // Show/hide nav items
-  ['CXO','Planner','Ops'].forEach(v => {
-    const el = document.getElementById(navMap[v]);
-    if (el) el.style.display = views.includes(v) ? '' : 'none';
-  });
-  // Land on first allowed view
-  if (views.length) {
-    const first = views[0];
-    ACTIVE_PAGE = pageMap[first] || 'plan';
-    document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
-    const nav = document.getElementById(navMap[first]);
-    if (nav) nav.classList.add('active');
-    document.querySelectorAll('.page-section').forEach(s=>s.style.display='none');
-    const sec = document.getElementById('page-'+ACTIVE_PAGE);
-    if (sec) sec.style.display='';
-  }
-  // Block switchPage for restricted views
-  const _orig = window.switchPage;
-  window.switchPage = function(p) {
-    const name = p==='cxo'?'CXO':p==='plan'?'Planner':'Ops';
-    if (!views.includes(name)) return;
-    _orig(p);
-  };
 }
 
 function handleLogout() {
