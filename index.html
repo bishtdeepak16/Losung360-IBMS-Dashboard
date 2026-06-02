@@ -1408,7 +1408,17 @@ function _sched(){
 }
 function _ni(){const el=document.getElementById('nextRefreshLine');if(el&&window._nr)el.textContent='Next ~'+Math.ceil((window._nr-Date.now())/60000)+'m';}
 setInterval(_ni,15000);
-async function refreshData(){await fetchData();}
+async function refreshData(){
+  await fetchData();
+  // Validate current user still has access after each refresh
+  if (CURRENT_USER && ACCESS_LIST.length > 0) {
+    const still = ACCESS_LIST.find(a => a.email.toLowerCase() === CURRENT_USER.email.toLowerCase());
+    if (!still) {
+      console.warn('User removed from access list — auto logging out');
+      handleLogout();
+    }
+  }
+}
 
 // ── PRESETS ───────────────────────────────
 function getPresetRange(p){
@@ -1617,7 +1627,6 @@ function renderCXOFCVol(D) {
   if(fcVolCanvas){ fcVolCanvas.style.height='240px'; fcVolCanvas.parentElement.style.height='240px'; }
   renderHBarsCJS('cxo-fc-vol',fcs,vals,fcs.map(fc=>FC_COLORS[fc]+'cc'),{suffix:' appts',noTickSuffix:true,maxRot:0});
   addExportBtn('cxo-fc-vol', 'Volume_by_FC');
-  addExportBtn('cxo-fc-vol','Volume_by_FC');
 }
 
 function renderCXOClientVol(D) {
@@ -2201,6 +2210,22 @@ async function saveEditUser() {
     if (!upResp.ok) throw new Error(await upResp.text());
     upShowMsg2('✓ User updated!', true);
     await loadAccessList();
+    // If the edited user is currently logged in on this session, update their session live
+    if (CURRENT_USER && CURRENT_USER.email.toLowerCase() === u.email.toLowerCase()) {
+      const fresh = ACCESS_LIST.find(a => a.email.toLowerCase() === u.email.toLowerCase());
+      if (fresh) {
+        const updated = { ...CURRENT_USER, role: fresh.role, fc: fresh.fc, views: fresh.views };
+        CURRENT_USER = updated;
+        sessionStorage.setItem('ibms_user', JSON.stringify(updated));
+        // Re-apply FC lock and view restrictions with new permissions
+        if (updated.role === 'FC') {
+          const fcs = Array.isArray(updated.fc) ? updated.fc : [updated.fc];
+          if (!fcs.includes('All')) lockFCFilter(fcs);
+        }
+        window.switchPage = window._origSwitchPage || window.switchPage; // reset wrapper
+        applyViewRestrictions(updated);
+      }
+    }
     setTimeout(()=>{document.getElementById('userPanelOverlay').remove(); renderUserPanel();},1200);
   } catch(e){upShowMsg2('Error: '+e.message.substring(0,60),false);}
 }
@@ -3112,7 +3137,28 @@ function initAuth() {
     const saved = sessionStorage.getItem('ibms_user');
     if (saved) {
       const user = JSON.parse(saved);
-      if (user && user.email) { applyLogin(user); return; }
+      if (user && user.email) {
+        // Re-fetch sheet to get latest role/fc/views before applying login
+        loadAccessList().then(() => {
+          const fresh = ACCESS_LIST.find(a => a.email.toLowerCase() === user.email.toLowerCase());
+          if (fresh) {
+            // Merge fresh permissions into saved user (keep name/picture from session)
+            const updated = { ...user, role: fresh.role, fc: fresh.fc, views: fresh.views };
+            sessionStorage.setItem('ibms_user', JSON.stringify(updated));
+            applyLogin(updated);
+          } else {
+            // User no longer in access list — force logout
+            sessionStorage.removeItem('ibms_user');
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.querySelector('.app-layout').style.display = 'none';
+            showLoginError('Your access has been revoked. Please contact admin.');
+          }
+        }).catch(() => {
+          // Sheet fetch failed — use saved session as fallback
+          applyLogin(user);
+        });
+        return;
+      }
     }
   } catch(e) {}
 
@@ -3215,6 +3261,19 @@ function applyLogin(user) {
   CURRENT_USER = user;
   document.getElementById('loginScreen').style.display = 'none';
   document.querySelector('.app-layout').style.display = 'flex';
+
+  // ── Auto logout at midnight ──────────────────────────────────
+  (function scheduleMidnightLogout() {
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0); // next midnight
+    const msUntilMidnight = midnight - now;
+    clearTimeout(window._midnightLogoutTimer);
+    window._midnightLogoutTimer = setTimeout(() => {
+      console.log('Auto logout at midnight');
+      handleLogout();
+    }, msUntilMidnight);
+  })();
 
   // Derive first name from email: "ravi.kant@..." → "Ravi", "planning@..." → "Planning"
   const prefix = (user.email||'').split('@')[0];
@@ -3331,11 +3390,12 @@ function applyViewRestrictions(user) {
   }
 
   // Wrap switchPage to block navigation to restricted views
-  const _orig = window.switchPage;
+  // Store original so we can reset on permission update
+  if (!window._origSwitchPage) window._origSwitchPage = window.switchPage;
   window.switchPage = function(p) {
     const name = p==='cxo'?'CXO':p==='plan'?'Planner':'Ops';
     if (!views.includes(name)) return;
-    _orig(p);
+    window._origSwitchPage(p);
   };
 }
 
