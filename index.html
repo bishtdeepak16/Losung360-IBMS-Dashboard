@@ -1004,6 +1004,7 @@ select:hover,select:focus{border-color:var(--orange);}
 /* ═══ INBOUND CONTROL PANEL v2 ═══ */
 // ── CONFIG ──────────────────────────────
 const SHEET_ID = '1SgelBlfese2hrxqjUm-ZcEAV7UQXuGmRg10B9ioB04I';
+const USERS_SHEET_ID = '1Fdp5T5WMZNv6Ggwqr4ulVuIgteu0b_Q8rf77pF4d32s';
 const USERS_GID = '1029277024';
 const MASTER_EMAIL = 'planning@losung360.com';
 const SHEET_GID = '1596417357'; // Appointment Table tab GID from URL
@@ -1960,7 +1961,7 @@ async function fetchUsersForPanel() {
   if (!token) return fallback;
   try {
     const resp = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/1Fdp5T5WMZNv6Ggwqr4ulVuIgteu0b_Q8rf77pF4d32s/values/Users`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
       { headers:{ Authorization:'Bearer '+token } }
     );
     const data = await resp.json();
@@ -2232,7 +2233,7 @@ async function addUser(){
   const addedBy=CURRENT_USER?CURRENT_USER.email:'';
   try{
     const resp=await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/1Fdp5T5WMZNv6Ggwqr4ulVuIgteu0b_Q8rf77pF4d32s/values/Users:append?valueInputOption=USER_ENTERED`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users:append?valueInputOption=USER_ENTERED`,
       {method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
        body:JSON.stringify({values:[[email,role,selFCs,selViews,addedBy,now]]})}
     );
@@ -2250,17 +2251,17 @@ async function removeUser(email){
   const token=sessionStorage.getItem('gtoken');
   if(!token){alert('Session expired.');return;}
   try{
-    const r0=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/1Fdp5T5WMZNv6Ggwqr4ulVuIgteu0b_Q8rf77pF4d32s/values/Users`,
+    const r0=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
       {headers:{Authorization:'Bearer '+token}});
     const d=await r0.json(); const rows=d.values||[];
     const ri=rows.findIndex((r,i)=>i>0&&r[0]&&r[0].trim().toLowerCase()===email.toLowerCase());
     if(ri<1){alert('User not found.');return;}
-    const mr=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/1Fdp5T5WMZNv6Ggwqr4ulVuIgteu0b_Q8rf77pF4d32s?fields=sheets.properties`,
+    const mr=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}?fields=sheets.properties`,
       {headers:{Authorization:'Bearer '+token}});
     const md=await mr.json();
     const sh=md.sheets.find(s=>s.properties.title==='Users');
     if(!sh){alert('Users sheet not found.');return;}
-    const dr=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/1Fdp5T5WMZNv6Ggwqr4ulVuIgteu0b_Q8rf77pF4d32s:batchUpdate`,
+    const dr=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}:batchUpdate`,
       {method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
        body:JSON.stringify({requests:[{deleteDimension:{range:{sheetId:sh.properties.sheetId,dimension:'ROWS',startIndex:ri,endIndex:ri+1}}}]})});
     if(!dr.ok)throw new Error(await dr.text());
@@ -3050,7 +3051,7 @@ async function loadAccessList() {
   if (!token) { console.warn('loadAccessList: no token'); return; }
   try {
     const resp = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/1Fdp5T5WMZNv6Ggwqr4ulVuIgteu0b_Q8rf77pF4d32s/values/Users`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
       { headers: { Authorization: 'Bearer ' + token } }
     );
     if (!resp.ok) { console.warn('loadAccessList HTTP error:', resp.status); return; }
