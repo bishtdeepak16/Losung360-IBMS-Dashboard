@@ -1927,53 +1927,65 @@ async function openUserPanel() {
   if (drop) drop.classList.remove('open');
   const existing = document.getElementById('userPanelOverlay');
   if (existing) existing.remove();
-  // If no write token stored, request a fresh one silently then open panel
-  if (!sessionStorage.getItem('gtoken')) {
-    try {
-      google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
-        prompt: '',
-        callback: (resp) => {
-          if (resp.access_token) {
-            sessionStorage.setItem('gtoken', resp.access_token);
-          }
-          renderUserPanel();
+  // Always request a fresh token (prompt:none = silent if already consented)
+  try {
+    google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
+      callback: async (resp) => {
+        if (resp && resp.access_token) {
+          sessionStorage.setItem('gtoken', resp.access_token);
         }
-      }).requestAccessToken({prompt:''});
-    } catch(e) {
-      renderUserPanel(); // open anyway, write ops will fail gracefully
-    }
-  } else {
-    // Refresh ACCESS_LIST from sheet before rendering
-    await loadAccessList();
+        renderUserPanel();
+      }
+    }).requestAccessToken({prompt: 'none'});
+  } catch(e) {
+    // Fallback: try with existing token or open with static data
     renderUserPanel();
   }
 }
 
 async function fetchUsersForPanel() {
   const token = sessionStorage.getItem('gtoken');
-  const fallback = ACCESS_LIST.map((u,i)=>{
-    const fcStr = Array.isArray(u.fc)?u.fc.join(','):u.fc||'All';
-    const vStr  = Array.isArray(u.views)?u.views.join(','):'All';
-    return {email:u.email,role:u.role,fc:fcStr,views:vStr,addedBy:'',addedOn:'',rowIndex:i+2};
-  });
-  if (!token) return fallback;
+  if (!token) {
+    console.warn('fetchUsersForPanel: no token, showing static fallback');
+    return ACCESS_LIST.map((u,i)=>({
+      email:u.email, role:u.role,
+      fc:Array.isArray(u.fc)?u.fc.join(','):(u.fc||'All'),
+      views:Array.isArray(u.views)?u.views.join(','):'All',
+      addedBy:'', addedOn:'', rowIndex:i+2
+    }));
+  }
   try {
     const resp = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
       { headers:{ Authorization:'Bearer '+token } }
     );
+    if (!resp.ok) {
+      console.warn('fetchUsersForPanel HTTP', resp.status, await resp.text());
+      return ACCESS_LIST.map((u,i)=>({
+        email:u.email, role:u.role,
+        fc:Array.isArray(u.fc)?u.fc.join(','):(u.fc||'All'),
+        views:Array.isArray(u.views)?u.views.join(','):'All',
+        addedBy:'', addedOn:'', rowIndex:i+2
+      }));
+    }
     const data = await resp.json();
     const rows = data.values||[];
-    return rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map((r,i)=>{
-      return {
-        email:r[0].trim(), role:r[1].trim(),
-        fc:(r[2]||'All').trim(), views:(r[3]||'All').trim(),
-        addedBy:r[4]||'', addedOn:r[5]||'', rowIndex:i+2
-      };
-    });
-  } catch(e){ return fallback; }
+    console.log('fetchUsersForPanel: got', rows.length, 'rows');
+    if (rows.length < 2) {
+      console.warn('fetchUsersForPanel: sheet has < 2 rows');
+      return [];
+    }
+    return rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map((r,i)=>({
+      email:r[0].trim(), role:r[1].trim(),
+      fc:(r[2]||'All').trim(), views:(r[3]||'All').trim(),
+      addedBy:r[4]||'', addedOn:r[5]||'', rowIndex:i+2
+    }));
+  } catch(e){
+    console.error('fetchUsersForPanel error:', e);
+    return [];
+  }
 }
 
 async function renderUserPanel() {
