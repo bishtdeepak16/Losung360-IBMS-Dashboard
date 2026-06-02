@@ -1927,7 +1927,6 @@ async function openUserPanel() {
   if (drop) drop.classList.remove('open');
   const existing = document.getElementById('userPanelOverlay');
   if (existing) existing.remove();
-  // Always get a fresh token before opening — handles missing + expired tokens
   const userEmail = CURRENT_USER ? CURRENT_USER.email : '';
   try {
     google.accounts.oauth2.initTokenClient({
@@ -1972,10 +1971,9 @@ async function fetchUsersForPanel() {
           fc: u.fc==='All' ? ['All'] : u.fc.split(',').map(s=>s.trim()),
           views: u.views==='All' ? ['CXO','Planner','Ops'] : u.views.split(',').map(s=>s.trim())
         }));
-        console.log('fetchUsersForPanel: loaded', sheetUsers.length, 'users from sheet');
         return sheetUsers;
       }
-    } catch(e){ console.warn('fetchUsersForPanel sheet fetch failed, using fallback:', e); }
+    } catch(e){ console.warn('fetchUsersForPanel sheet fetch failed:', e); }
   }
   return ACCESS_LIST.map((u,i)=>{
     const fcStr = Array.isArray(u.fc)?u.fc.join(','):u.fc||'All';
@@ -3166,7 +3164,6 @@ function handleCredentialResponse(response) {
   try {
     const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
     const user = { email: payload.email, name: payload.name || payload.email.split('@')[0], picture: payload.picture || '' };
-    // Get OAuth access token silently (needed for Sheets API)
     try {
       google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
@@ -3209,7 +3206,6 @@ function checkAccess(user) {
   if (!Array.isArray(entry.fc)) entry.fc = entry.fc==='All'?['All']:[entry.fc];
   if (!Array.isArray(entry.views)||!entry.views.length) entry.views=['CXO','Planner','Ops'];
   if (entry.role==='Planning') entry.views=['CXO','Planner','Ops'];
-  // FIXED: include views in fullUser so applyViewRestrictions receives them
   const fullUser = { ...user, role: entry.role, fc: entry.fc, views: entry.views };
   sessionStorage.setItem('ibms_user', JSON.stringify(fullUser));
   applyLogin(fullUser);
@@ -3318,25 +3314,23 @@ function lockFCFilter(fcCodes) {
 function applyViewRestrictions(user) {
   if (user.role === 'Planning') return; // full access always
   const views = Array.isArray(user.views) ? user.views : ['CXO','Planner','Ops'];
-  const navMap   = {CXO:'navCxo', Planner:'navPlan', Ops:'navOps'};
-  const pageMap  = {CXO:'cxo',    Planner:'plan',    Ops:'ops'};
-  // Show/hide nav items
+  const navMap  = {CXO:'navCxo', Planner:'navPlan', Ops:'navOps'};
+  const pageMap = {CXO:'cxo',    Planner:'plan',    Ops:'ops'};
+
+  // Hide nav items the user cannot access
   ['CXO','Planner','Ops'].forEach(v => {
     const el = document.getElementById(navMap[v]);
     if (el) el.style.display = views.includes(v) ? '' : 'none';
   });
-  // Land on first allowed view
+
+  // Land on the first allowed view using the real switchPage()
+  // so pageCxo/pagePlan/pageOps .active class and renderActivePage() fire correctly
   if (views.length) {
-    const first = views[0];
-    ACTIVE_PAGE = pageMap[first] || 'plan';
-    document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
-    const nav = document.getElementById(navMap[first]);
-    if (nav) nav.classList.add('active');
-    document.querySelectorAll('.page-section').forEach(s=>s.style.display='none');
-    const sec = document.getElementById('page-'+ACTIVE_PAGE);
-    if (sec) sec.style.display='';
+    const firstPage = pageMap[views[0]] || 'ops';
+    switchPage(firstPage);
   }
-  // Block switchPage for restricted views
+
+  // Wrap switchPage to block navigation to restricted views
   const _orig = window.switchPage;
   window.switchPage = function(p) {
     const name = p==='cxo'?'CXO':p==='plan'?'Planner':'Ops';
