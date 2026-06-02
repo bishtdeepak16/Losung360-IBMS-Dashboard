@@ -1927,26 +1927,28 @@ async function openUserPanel() {
   if (drop) drop.classList.remove('open');
   const existing = document.getElementById('userPanelOverlay');
   if (existing) existing.remove();
-  // If no write token stored, request a fresh one silently then open panel
-  if (!sessionStorage.getItem('gtoken')) {
-    try {
-      google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
-        prompt: '',
-        callback: async (resp) => {
-          if (resp.access_token) {
-            sessionStorage.setItem('gtoken', resp.access_token);
-            await loadAccessList();
-          }
-          renderUserPanel();
+
+  // Always get a fresh OAuth token before opening the panel.
+  // This handles: (a) token never obtained, (b) token expired after ~1hr.
+  // prompt:'' = silent grant — no popup if user already consented this session.
+  const userEmail = CURRENT_USER ? CURRENT_USER.email : '';
+  try {
+    google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
+      hint: userEmail,
+      prompt: '',
+      callback: async (resp) => {
+        if (resp && resp.access_token) {
+          sessionStorage.setItem('gtoken', resp.access_token);
+          await loadAccessList(); // sheet is primary source — always reload
         }
-      }).requestAccessToken({prompt:''});
-    } catch(e) {
-      renderUserPanel(); // open anyway, write ops will fail gracefully
-    }
-  } else {
-    // Refresh ACCESS_LIST from sheet before rendering
+        renderUserPanel();
+      }
+    }).requestAccessToken({prompt: ''});
+  } catch(e) {
+    // GSI not available — try existing token + fallback gracefully
+    console.warn('openUserPanel: token refresh failed, using existing token:', e);
     await loadAccessList();
     renderUserPanel();
   }
@@ -1954,39 +1956,27 @@ async function openUserPanel() {
 
 async function fetchUsersForPanel() {
   const token = sessionStorage.getItem('gtoken');
-  // Sheet is always the primary source — try it first
-  if (token) {
-    try {
-      const resp = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
-        { headers:{ Authorization:'Bearer '+token } }
-      );
-      if (resp.ok) {
-        const data = await resp.json();
-        const rows = data.values||[];
-        const sheetUsers = rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map((r,i)=>({
-          email:r[0].trim(), role:r[1].trim(),
-          fc:(r[2]||'All').trim(), views:(r[3]||'All').trim(),
-          addedBy:r[4]||'', addedOn:r[5]||'', rowIndex:i+2
-        }));
-        // Keep ACCESS_LIST in sync with sheet truth
-        ACCESS_LIST.length = 0;
-        sheetUsers.forEach(u => ACCESS_LIST.push({
-          email: u.email, role: u.role,
-          fc: u.fc==='All' ? ['All'] : u.fc.split(',').map(s=>s.trim()),
-          views: u.views==='All' ? ['CXO','Planner','Ops'] : u.views.split(',').map(s=>s.trim())
-        }));
-        console.log('fetchUsersForPanel: loaded', sheetUsers.length, 'users from sheet');
-        return sheetUsers;
-      }
-    } catch(e){ console.warn('fetchUsersForPanel sheet fetch failed, using ACCESS_LIST fallback:', e); }
-  }
-  // Fallback: use in-memory ACCESS_LIST
-  return ACCESS_LIST.map((u,i)=>{
+  const fallback = ACCESS_LIST.map((u,i)=>{
     const fcStr = Array.isArray(u.fc)?u.fc.join(','):u.fc||'All';
     const vStr  = Array.isArray(u.views)?u.views.join(','):'All';
     return {email:u.email,role:u.role,fc:fcStr,views:vStr,addedBy:'',addedOn:'',rowIndex:i+2};
   });
+  if (!token) return fallback;
+  try {
+    const resp = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
+      { headers:{ Authorization:'Bearer '+token } }
+    );
+    const data = await resp.json();
+    const rows = data.values||[];
+    return rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map((r,i)=>{
+      return {
+        email:r[0].trim(), role:r[1].trim(),
+        fc:(r[2]||'All').trim(), views:(r[3]||'All').trim(),
+        addedBy:r[4]||'', addedOn:r[5]||'', rowIndex:i+2
+      };
+    });
+  } catch(e){ return fallback; }
 }
 
 async function renderUserPanel() {
@@ -2185,8 +2175,8 @@ function upEditToggleFC() {
 async function saveEditUser() {
   const u = _editingUser;
   if (!u) return;
-  const token = sessionStorage.getItem('gtoken');
-  if (!token) { document.getElementById('upEditMsg').textContent='Session expired.'; return; }
+  const token = await getFreshToken();
+  if (!token) { document.getElementById('upEditMsg').textContent='Could not authenticate — please sign out and back in.'; return; }
   const role = document.getElementById('upEditRole').value;
   const selFCs = role==='Planning' ? 'All'
     : Array.from(document.querySelectorAll('.up-edit-fc-cb:checked')).map(c=>c.value).join(',') || 'All';
@@ -2232,6 +2222,32 @@ function upShowMsg(msg,ok){
   setTimeout(()=>{el.style.display='none';},3500);
 }
 
+// Always get a fresh OAuth access token before any write operation.
+// Silently refreshes if already consented this session.
+function getFreshToken() {
+  return new Promise((resolve) => {
+    const userEmail = CURRENT_USER ? CURRENT_USER.email : '';
+    try {
+      google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
+        hint: userEmail,
+        prompt: '',
+        callback: (resp) => {
+          if (resp && resp.access_token) {
+            sessionStorage.setItem('gtoken', resp.access_token);
+            resolve(resp.access_token);
+          } else {
+            resolve(sessionStorage.getItem('gtoken')); // fallback
+          }
+        }
+      }).requestAccessToken({prompt: ''});
+    } catch(e) {
+      resolve(sessionStorage.getItem('gtoken')); // fallback to stored
+    }
+  });
+}
+
 async function addUser(){
   const email=(document.getElementById('upEmailInput').value||'').trim().toLowerCase();
   const role=document.getElementById('upRoleSelect').value;
@@ -2240,8 +2256,9 @@ async function addUser(){
   const selViews = role==='Planning' ? 'All'
     : Array.from(document.querySelectorAll('.up-view-cb:checked')).map(c=>c.value).join(',') || 'All';
   if(!email||!email.includes('@')){upShowMsg('Please enter a valid email address.',false);return;}
-  const token=sessionStorage.getItem('gtoken');
-  if(!token){upShowMsg('Session expired — please log out and back in.',false);return;}
+  upShowMsg('Adding user…', true);
+  const token = await getFreshToken();
+  if(!token){upShowMsg('Could not authenticate — please sign out and back in.',false);return;}
   const now=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
   const addedBy=CURRENT_USER?CURRENT_USER.email:'';
   try{
@@ -2261,8 +2278,8 @@ async function addUser(){
 async function removeUser(email){
   if(email.toLowerCase()===MASTER_EMAIL){alert('Master admin cannot be removed.');return;}
   if(!confirm('Remove '+email+' from dashboard access?'))return;
-  const token=sessionStorage.getItem('gtoken');
-  if(!token){alert('Session expired.');return;}
+  const token = await getFreshToken();
+  if(!token){alert('Could not authenticate — please sign out and back in.');return;}
   try{
     const r0=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
       {headers:{Authorization:'Bearer '+token}});
@@ -3152,8 +3169,28 @@ function handleCredentialResponse(response) {
   try {
     const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
     const user = { email: payload.email, name: payload.name || payload.email.split('@')[0], picture: payload.picture || '' };
-    // Load latest access list from sheet, then check access
-    loadAccessList().then(() => checkAccess(user));
+    // Also get an OAuth access token (needed for Sheets API read/write)
+    // Use prompt:'' for silent grant — user already consented via Sign-In button
+    try {
+      google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
+        hint: user.email,
+        prompt: '',
+        callback: async (resp) => {
+          if (resp && resp.access_token) {
+            sessionStorage.setItem('gtoken', resp.access_token);
+          }
+          // loadAccessList needs gtoken — now it will work
+          await loadAccessList();
+          checkAccess(user);
+        }
+      }).requestAccessToken({prompt: ''});
+    } catch(tokenErr) {
+      // Fallback: proceed without write token (read-only panel, add/edit will warn)
+      console.warn('Could not get OAuth access token silently:', tokenErr);
+      loadAccessList().then(() => checkAccess(user));
+    }
   } catch(e) {
     showLoginError('Failed to read account info. Please try again.');
   }
