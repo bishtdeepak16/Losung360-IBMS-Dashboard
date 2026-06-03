@@ -694,17 +694,17 @@ select:hover,select:focus{border-color:var(--orange);}
   <!-- Nav -->
   <div class="sidebar-section">MAIN</div>
   <div class="sidebar-nav">
-    <div class="sidebar-item active" id="navCxo" onclick="switchPage('cxo')">
+    <div class="sidebar-item active" id="navCxo" onclick="resetDateAndSwitch('cxo')">
       <span class="sidebar-item-icon">👁️</span>
       <span>CXO View</span>
       <span class="sidebar-badge sb-cxo">Exec</span>
     </div>
-    <div class="sidebar-item" id="navPlan" onclick="switchPage('plan')">
+    <div class="sidebar-item" id="navPlan" onclick="resetDateAndSwitch('plan')">
       <span class="sidebar-item-icon">📋</span>
       <span>Planner View</span>
       <span class="sidebar-badge sb-plan">Supply</span>
     </div>
-    <div class="sidebar-item" id="navOps" onclick="switchPage('ops')">
+    <div class="sidebar-item" id="navOps" onclick="resetDateAndSwitch('ops')">
       <span class="sidebar-item-icon">⚙️</span>
       <span>Ops View</span>
       <span class="sidebar-badge sb-ops">Live</span>
@@ -1421,7 +1421,7 @@ function getPresetRange(p){
   return[null,null];
 }
 function applyPreset(p,btn){
-  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.sidebar-date-item').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   [dateFrom,dateTo]=getPresetRange(p);
   const badge=document.getElementById('activeRangeBadge');
@@ -1442,7 +1442,7 @@ function applyCustomRange(){
   var d1=localDate(f,false),d2=localDate(t,true);
   if(d1>d2){alert('From must be before To.');return;}
   dateFrom=d1;dateTo=d2;
-  document.querySelectorAll('.preset-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.sidebar-date-item').forEach(function(b){b.classList.remove('active');});
   document.getElementById('activeRangeBadge').classList.add('show');
   document.getElementById('activeRangeText').textContent=f+' to '+t;
   applyFilters();
@@ -1496,23 +1496,6 @@ function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];
 
 function renderActivePage(){try{if(ACTIVE_PAGE==='cxo')renderCXO();else if(ACTIVE_PAGE==='plan')renderPlanner();else renderOps();}catch(e){console.error(e);}}
 function switchPage(p){
-  // Save current date range for the view being left
-  if (ACTIVE_PAGE && ACTIVE_PAGE !== p) {
-    window._viewDateRange = window._viewDateRange || {};
-    window._viewDateRange[ACTIVE_PAGE] = {from: dateFrom, to: dateTo};
-    // Reset to 2026 YTD for the new view
-    dateFrom = new Date(2026, 0, 1); dateFrom.setHours(0,0,0,0);
-    dateTo = new Date(); dateTo.setHours(23,59,59,999);
-    // Update sidebar active state
-    document.querySelectorAll('.sidebar-date-item').forEach(el=>el.classList.remove('active'));
-    const ytdEl = document.getElementById('sdFrom2026');
-    if (ytdEl) ytdEl.classList.add('active');
-    // Update custom inputs
-    const dF=document.getElementById('customFrom'); if(dF) dF.value='';
-    const dT=document.getElementById('customTo');   if(dT) dT.value='';
-    const badge=document.getElementById('activeRangeBadge');
-    if(badge) badge.classList.remove('show');
-  }
   ACTIVE_PAGE=p;
   const pageMap={cxo:'pageCxo',plan:'pagePlan',ops:'pageOps'};
   const navMap={cxo:'navCxo',plan:'navPlan',ops:'navOps'};
@@ -3053,6 +3036,19 @@ window.addEventListener('load',()=>{
 
 
 
+
+function resetDateAndSwitch(p) {
+  dateFrom = new Date(2026, 0, 1); dateFrom.setHours(0,0,0,0);
+  dateTo = new Date(); dateTo.setHours(23,59,59,999);
+  document.querySelectorAll('.sidebar-date-item').forEach(function(el){el.classList.remove('active');});
+  var ytdEl = document.getElementById('sdFrom2026');
+  if (ytdEl) ytdEl.classList.add('active');
+  var dF=document.getElementById('customFrom'); if(dF) dF.value='';
+  var dT=document.getElementById('customTo');   if(dT) dT.value='';
+  var badge=document.getElementById('activeRangeBadge');
+  if(badge) badge.classList.remove('show');
+  switchPage(p);
+}
 
 // ── SIDEBAR DATE PRESETS ─────────────────────
 function sidebarPreset(p) {
