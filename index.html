@@ -741,8 +741,8 @@ select:hover,select:focus{border-color:var(--orange);}
     <div style="padding:8px 14px 4px;">
       <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.08em;margin-bottom:6px;">CUSTOM</div>
       <div style="display:flex;flex-direction:column;gap:5px;">
-        <input type="date" class="date-input" id="dateFrom" style="width:100%;font-size:11px;" placeholder="From"/>
-        <input type="date" class="date-input" id="dateTo" style="width:100%;font-size:11px;" placeholder="To"/>
+        <input type="date" class="date-input" id="customFrom" style="width:100%;font-size:11px;" placeholder="From"/>
+        <input type="date" class="date-input" id="customTo" style="width:100%;font-size:11px;" placeholder="To"/>
         <button class="apply-btn" onclick="applyCustomRange()" style="width:100%;font-size:11px;">Apply</button>
       </div>
     </div>
@@ -829,16 +829,16 @@ select:hover,select:focus{border-color:var(--orange);}
       </div>
 
       <div class="kpi-grid kpi-grid-5">
-        <div class="kc teal"><div class="kc-icon-box">📦</div><div class="kc-body"><div class="kc-lbl">Total Appointments</div><div class="kc-val" id="cxo-units">—</div><div class="kc-sub">Count of Appt IDs</div></div></div>
+        <div class="kc teal"><div class="kc-icon-box">📋</div><div class="kc-body"><div class="kc-lbl">Total Appointments</div><div class="kc-val" id="cxo-units">—</div><div class="kc-sub">Count of Appt IDs</div></div></div>
         <div class="kc green"><div class="kc-icon-box">✅</div><div class="kc-body"><div class="kc-lbl">Appt Fulfilment %</div><div class="kc-val" id="cxo-fulfil">—</div><div class="kc-sub" id="cxo-fulfil-sub">Gate-Ins / Scheduled</div></div></div>
         <div class="kc orange"><div class="kc-icon-box">📅</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Scheduled Date Adherence</div><div class="kc-val" id="cxo-adherence">—</div><div class="kc-sub">Showed on correct day</div></div></div>
         <div class="kc red"><div class="kc-icon-box">⚠️</div><div class="kc-body"><div class="kc-lbl">Null Rate</div><div class="kc-val" id="cxo-null">—</div><div class="kc-sub" id="cxo-null-sub">Wasted planning slots</div></div></div>
-        <div class="kc purple"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 36V20l12-8 12 8v16H6z" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.8" stroke-linejoin="round"/><path d="M18 36v-8h6v8" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5"/><path d="M6 22h24" stroke="#7c3aed" stroke-width="1.5"/><circle cx="38" cy="14" r="3.5" fill="#a78bfa"/><path d="M35 20c0-1.7 1.3-3 3-3s3 1.3 3 3l1 5" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/><path d="M34 25l4-1 4 4" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M38 25l2 8" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/><path d="M40 33l3 2M43 32l1 3" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round"/><path d="M30 28l13-2" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 2"/></svg></div><div class="kc-body"><div class="kc-lbl">Absconding Rate</div><div class="kc-val" id="cxo-abscond">—</div><div class="kc-sub">Came but didn't complete</div></div></div>
+        <div class="kc purple"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><path d="M6 36V20l12-8 12 8v16H6z" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2.2" stroke-linejoin="round"/><path d="M18 36v-8h6v8" fill="#8b5cf6" stroke="#6d28d9" stroke-width="2"/><path d="M6 22h24" stroke="#6d28d9" stroke-width="2"/><circle cx="38" cy="13" r="4" fill="#7c3aed"/><path d="M34 19c0-2 1.8-4 4-4s4 1.8 4 4l1.5 6" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round"/><path d="M33 26l5-2 4 5" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 25l2.5 9" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round"/><path d="M30 28l13-2" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 2"/></svg></div><div class="kc-body"><div class="kc-lbl">Absconding Rate</div><div class="kc-val" id="cxo-abscond">—</div><div class="kc-sub">Came but didn't complete</div></div></div>
         <div class="kc lime"><div class="kc-icon-box">🎯</div><div class="kc-body"><div class="kc-lbl">Same-Day Clearance %</div><div class="kc-val" id="cxo-sameday">—</div><div class="kc-sub" id="cxo-sameday-sub">Gate-Out = Gate-In date</div></div></div>
-        <div class="kc red"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="38" width="40" height="6" rx="1.5" fill="#dc2626" opacity=".2"/><rect x="10" y="33" width="6" height="5" rx="1" fill="#dc2626" opacity=".3"/><rect x="36" y="33" width="6" height="5" rx="1" fill="#dc2626" opacity=".3"/><path d="M10 36h32" stroke="#dc2626" stroke-width="1.2" opacity=".25"/><rect x="10" y="12" width="32" height="22" rx="2.5" fill="#fecaca"/><rect x="10" y="12" width="32" height="22" rx="2.5" stroke="#dc2626" stroke-width="2"/><path d="M22 12l-5 10 7-4-7 18" stroke="#dc2626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 8l5 4M42 8l-5 4" stroke="#dc2626" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg></div><div class="kc-body"><div class="kc-lbl">Damage + Shortage %</div><div class="kc-val" id="cxo-dsrate">—</div><div class="kc-sub">vs Units as per Docs</div></div></div>
+        <div class="kc red"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="6" y="38" width="40" height="6" rx="1.5" fill="#b91c1c" opacity=".5"/><rect x="10" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="36" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="10" y="12" width="32" height="22" rx="2.5" fill="#fca5a5"/><rect x="10" y="12" width="32" height="22" rx="2.5" stroke="#b91c1c" stroke-width="2.5"/><path d="M22 12l-6 12 8-5-8 21" stroke="#b91c1c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 7l6 5M43 7l-6 5" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Damage + Shortage %</div><div class="kc-val" id="cxo-dsrate">—</div><div class="kc-sub">vs Units as per Docs</div></div></div>
         <div class="kc blue"><div class="kc-icon-box">📊</div><div class="kc-body"><div class="kc-lbl">Advance Appts %</div><div class="kc-val" id="cxo-advance">—</div><div class="kc-sub" id="cxo-advance-sub">vs Immediate</div></div></div>
         <div class="kc amber"><div class="kc-icon-box">⏱</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Median Gate-to-Gate TAT</div><div class="kc-val" id="cxo-tat">—</div><div class="kc-sub">Hours (completed only)</div></div></div>
-        <div class="kc pink"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="22" width="30" height="18" rx="2.5" fill="#fbcfe8" stroke="#ec4899" stroke-width="1.8"/><rect x="2" y="22" width="10" height="18" rx="2.5" fill="#ec4899" opacity=".4"/><path d="M32 28h6l5 7H32" stroke="#ec4899" stroke-width="1.8" stroke-linejoin="round" fill="#fbcfe8"/><circle cx="11" cy="42" r="5" fill="#ec4899"/><circle cx="11" cy="42" r="2.5" fill="#fff"/><circle cx="29" cy="42" r="5" fill="#ec4899"/><circle cx="29" cy="42" r="2.5" fill="#fff"/><path d="M1 27l-3-1M1 32l-4 1M1 37l-3 1" stroke="#ec4899" stroke-width="2" stroke-linecap="round" opacity=".5"/><circle cx="42" cy="16" r="8" fill="#fff0f6" stroke="#ec4899" stroke-width="1.8"/><path d="M42 10v6l3.5 2.5" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Immediate Appts %</div><div class="kc-val" id="cxo-imm-pct">—</div><div class="kc-sub" id="cxo-imm-pct-sub">Walk-in pressure</div></div></div>
+        <div class="kc pink"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="2" y="22" width="30" height="18" rx="2.5" fill="#f9a8d4" stroke="#be185d" stroke-width="2"/><rect x="2" y="22" width="10" height="18" rx="2.5" fill="#db2777" opacity=".7"/><path d="M32 28h6l5 7H32" stroke="#be185d" stroke-width="2" stroke-linejoin="round" fill="#f9a8d4"/><circle cx="11" cy="42" r="5.5" fill="#be185d"/><circle cx="11" cy="42" r="2.5" fill="#fff"/><circle cx="29" cy="42" r="5.5" fill="#be185d"/><circle cx="29" cy="42" r="2.5" fill="#fff"/><path d="M1 27l-4-2M1 32l-5 1M1 37l-4 2" stroke="#be185d" stroke-width="2.5" stroke-linecap="round"/><circle cx="42" cy="16" r="8" fill="#fdf2f8" stroke="#be185d" stroke-width="2.2"/><path d="M42 10v6l4 2.5" stroke="#be185d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Immediate Appts %</div><div class="kc-val" id="cxo-imm-pct">—</div><div class="kc-sub" id="cxo-imm-pct-sub">Walk-in pressure</div></div></div>
       </div>
       <div class="two-col">
         <div class="cc orange"><div class="cc-row"><div><div class="cc-title">📈 Monthly Volume Trend</div><div class="cc-sub">Good Units (bars) + Appointments (line)</div></div></div><div class="rh"><canvas id="cxo-trend"></canvas></div></div>
@@ -1408,17 +1408,7 @@ function _sched(){
 }
 function _ni(){const el=document.getElementById('nextRefreshLine');if(el&&window._nr)el.textContent='Next ~'+Math.ceil((window._nr-Date.now())/60000)+'m';}
 setInterval(_ni,15000);
-async function refreshData(){
-  await fetchData();
-  // Validate current user still has access after each refresh
-  if (CURRENT_USER && ACCESS_LIST.length > 0) {
-    const still = ACCESS_LIST.find(a => a.email.toLowerCase() === CURRENT_USER.email.toLowerCase());
-    if (!still) {
-      console.warn('User removed from access list — auto logging out');
-      handleLogout();
-    }
-  }
-}
+async function refreshData(){await fetchData();}
 
 // ── PRESETS ───────────────────────────────
 function getPresetRange(p){
@@ -1440,19 +1430,23 @@ function applyPreset(p,btn){
   applyFilters();
 }
 function applyCustomRange(){
-  const f=document.getElementById('dateFrom').value,t=document.getElementById('dateTo').value;
-  if(!f||!t)return;
-  dateFrom=new Date(f);dateFrom.setHours(0,0,0,0);
-  dateTo=new Date(t);dateTo.setHours(23,59,59,999);
-  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  var f=document.getElementById('customFrom').value,t=document.getElementById('customTo').value;
+  if(!f||!t){alert('Select both dates.');return;}
+  var d1=new Date(f);d1.setHours(0,0,0,0);
+  var d2=new Date(t);d2.setHours(23,59,59,999);
+  if(d1>d2){alert('From must be before To.');return;}
+  dateFrom=d1;dateTo=d2;
+  document.querySelectorAll('.preset-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('activeRangeBadge').classList.add('show');
-  document.getElementById('activeRangeText').textContent=f+' → '+t;
+  document.getElementById('activeRangeText').textContent=f+' to '+t;
   applyFilters();
 }
 function clearCustomRange(){
-  document.getElementById('dateFrom').value='';document.getElementById('dateTo').value='';
-  applyPreset('thismonth',document.getElementById('presetThisMonth'));
+  document.getElementById('customFrom').value='';
+  document.getElementById('customTo').value='';
+  applyPreset('ytd2026',document.getElementById('preset2026YTD'));
 }
+
 
 // ── MULTI-SELECT ──────────────────────────
 function toggleMs(id){event.stopPropagation();document.getElementById(id+'Panel').classList.toggle('open');document.getElementById(id+'Btn').classList.toggle('open');}
@@ -1627,6 +1621,7 @@ function renderCXOFCVol(D) {
   if(fcVolCanvas){ fcVolCanvas.style.height='240px'; fcVolCanvas.parentElement.style.height='240px'; }
   renderHBarsCJS('cxo-fc-vol',fcs,vals,fcs.map(fc=>FC_COLORS[fc]+'cc'),{suffix:' appts',noTickSuffix:true,maxRot:0});
   addExportBtn('cxo-fc-vol', 'Volume_by_FC');
+  addExportBtn('cxo-fc-vol','Volume_by_FC');
 }
 
 function renderCXOClientVol(D) {
@@ -2210,22 +2205,6 @@ async function saveEditUser() {
     if (!upResp.ok) throw new Error(await upResp.text());
     upShowMsg2('✓ User updated!', true);
     await loadAccessList();
-    // If the edited user is currently logged in on this session, update their session live
-    if (CURRENT_USER && CURRENT_USER.email.toLowerCase() === u.email.toLowerCase()) {
-      const fresh = ACCESS_LIST.find(a => a.email.toLowerCase() === u.email.toLowerCase());
-      if (fresh) {
-        const updated = { ...CURRENT_USER, role: fresh.role, fc: fresh.fc, views: fresh.views };
-        CURRENT_USER = updated;
-        sessionStorage.setItem('ibms_user', JSON.stringify(updated));
-        // Re-apply FC lock and view restrictions with new permissions
-        if (updated.role === 'FC') {
-          const fcs = Array.isArray(updated.fc) ? updated.fc : [updated.fc];
-          if (!fcs.includes('All')) lockFCFilter(fcs);
-        }
-        window.switchPage = window._origSwitchPage || window.switchPage; // reset wrapper
-        applyViewRestrictions(updated);
-      }
-    }
     setTimeout(()=>{document.getElementById('userPanelOverlay').remove(); renderUserPanel();},1200);
   } catch(e){upShowMsg2('Error: '+e.message.substring(0,60),false);}
 }
@@ -2738,8 +2717,7 @@ function exportPendingAging() {
 }
 
 function renderOpsHeatmapOut(D) {
-  const allFcs=['MUM','HYD','GGN','KOL','BNG','CHE'];
-  const fcs=(window._allowedFCs&&!window._allowedFCs.includes('All'))?allFcs.filter(f=>window._allowedFCs.includes(f)):allFcs;
+  const fcs=['MUM','HYD','GGN','KOL','BNG','CHE'];
   const hours=Array.from({length:16},(_,i)=>i+6);
   const wrap=document.getElementById('ops-heatmap-out');
   if(!wrap) return;
@@ -2771,8 +2749,7 @@ function renderOpsHeatmapOut(D) {
 }
 function renderOpsHeatmap(D) {
   _heatmapData=D;
-  const allFcs=['MUM','HYD','GGN','KOL','BNG','CHE'];
-  const fcs=(window._allowedFCs&&!window._allowedFCs.includes('All'))?allFcs.filter(f=>window._allowedFCs.includes(f)):allFcs;
+  const fcs=['MUM','HYD','GGN','KOL','BNG','CHE'];
   const hours=Array.from({length:16},(_,i)=>i+6);
   const grid={};
   D.forEach(r=>{ const h=r._gateInHour; const fc=r['FC']; if(h===null||!fc) return; grid[fc+'_'+h]=(grid[fc+'_'+h]||0)+1; });
@@ -3139,28 +3116,7 @@ function initAuth() {
     const saved = sessionStorage.getItem('ibms_user');
     if (saved) {
       const user = JSON.parse(saved);
-      if (user && user.email) {
-        // Re-fetch sheet to get latest role/fc/views before applying login
-        loadAccessList().then(() => {
-          const fresh = ACCESS_LIST.find(a => a.email.toLowerCase() === user.email.toLowerCase());
-          if (fresh) {
-            // Merge fresh permissions into saved user (keep name/picture from session)
-            const updated = { ...user, role: fresh.role, fc: fresh.fc, views: fresh.views };
-            sessionStorage.setItem('ibms_user', JSON.stringify(updated));
-            applyLogin(updated);
-          } else {
-            // User no longer in access list — force logout
-            sessionStorage.removeItem('ibms_user');
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.querySelector('.app-layout').style.display = 'none';
-            showLoginError('Your access has been revoked. Please contact admin.');
-          }
-        }).catch(() => {
-          // Sheet fetch failed — use saved session as fallback
-          applyLogin(user);
-        });
-        return;
-      }
+      if (user && user.email) { applyLogin(user); return; }
     }
   } catch(e) {}
 
@@ -3264,19 +3220,6 @@ function applyLogin(user) {
   document.getElementById('loginScreen').style.display = 'none';
   document.querySelector('.app-layout').style.display = 'flex';
 
-  // ── Auto logout at midnight ──────────────────────────────────
-  (function scheduleMidnightLogout() {
-    const now = new Date();
-    const midnight = new Date(now);
-    midnight.setHours(24, 0, 0, 0); // next midnight
-    const msUntilMidnight = midnight - now;
-    clearTimeout(window._midnightLogoutTimer);
-    window._midnightLogoutTimer = setTimeout(() => {
-      console.log('Auto logout at midnight');
-      handleLogout();
-    }, msUntilMidnight);
-  })();
-
   // Derive first name from email: "ravi.kant@..." → "Ravi", "planning@..." → "Planning"
   const prefix = (user.email||'').split('@')[0];
   const firstName = prefix.split(/[._]/)[0];
@@ -3338,41 +3281,48 @@ function applyLogin(user) {
 
   if (user.role === 'FC') {
     const fcs = Array.isArray(user.fc) ? user.fc : [user.fc];
-    if (!fcs.includes('All')) {
-      window._allowedFCs = fcs;
-      lockFCFilter(fcs);
-    } else {
-      window._allowedFCs = ['All'];
-    }
-  } else {
-    window._allowedFCs = ['All']; // Planning: all FCs visible
-  }
+    if (!fcs.includes('All')) { window._allowedFCs = fcs; lockFCFilter(fcs); }
+    else window._allowedFCs = ['All'];
+  } else { window._allowedFCs = ['All']; }
   applyViewRestrictions(user);
   fetchData();
 }
 
 function lockFCFilter(fcCodes) {
   if (!Array.isArray(fcCodes)) fcCodes = [fcCodes];
-  const cbs = document.querySelectorAll('.fc-cb');
-  cbs.forEach(cb => { cb.checked = fcCodes.includes(cb.value.trim()); cb.disabled = true; });
-  const allCb = document.getElementById('fcAll');
-  if (allCb) { allCb.checked = false; allCb.disabled = true; }
-  const label = fcCodes.join(', ');
-  const fcBtn = document.getElementById('fcBtn');
+  window._allowedFCs = fcCodes;
+  document.querySelectorAll('.fc-cb').forEach(function(cb) {
+    var opt = cb.closest('.ms-opt');
+    if (fcCodes.includes(cb.value.trim())) {
+      cb.checked = true; cb.disabled = false;
+      if (opt) opt.style.display = '';
+    } else {
+      cb.checked = false; cb.disabled = true;
+      if (opt) opt.style.display = 'none';
+    }
+  });
+  var allCb = document.getElementById('fcAll');
+  if (allCb) {
+    allCb.checked = false; allCb.disabled = true;
+    var r = allCb.closest('.ms-opt');
+    if (r) r.style.display = 'none';
+  }
+  var label = fcCodes.join(', ');
+  var fcBtn = document.getElementById('fcBtn');
   if (fcBtn) {
     fcBtn.textContent = label + ' ▾';
     fcBtn.style.color = '#16a34a';
     fcBtn.style.borderColor = '#bbf7d0';
     fcBtn.style.background = '#ecfdf5';
-    fcBtn.title = 'FC filter locked to ' + label;
-    fcBtn.onclick = null;
-    fcBtn.style.cursor = 'not-allowed';
+    fcBtn.title = 'FC access limited to: ' + label;
+    fcBtn.style.cursor = 'pointer';
+    fcBtn.onclick = function(e){ e.stopPropagation(); toggleMs('fc'); };
   }
-  const filterRow = document.getElementById('sharedFilterRow');
+  var filterRow = document.getElementById('sharedFilterRow');
   if (filterRow) {
-    const old = filterRow.querySelector('.fc-locked-badge');
-    if (old) old.remove();
-    const badge = document.createElement('span');
+    var ex = filterRow.querySelector('.fc-locked-badge');
+    if (ex) ex.remove();
+    var badge = document.createElement('span');
     badge.className = 'fc-locked-badge';
     badge.innerHTML = '🔒 Viewing: ' + label + ' only';
     filterRow.appendChild(badge);
@@ -3399,12 +3349,11 @@ function applyViewRestrictions(user) {
   }
 
   // Wrap switchPage to block navigation to restricted views
-  // Store original so we can reset on permission update
-  if (!window._origSwitchPage) window._origSwitchPage = window.switchPage;
+  const _orig = window.switchPage;
   window.switchPage = function(p) {
     const name = p==='cxo'?'CXO':p==='plan'?'Planner':'Ops';
     if (!views.includes(name)) return;
-    window._origSwitchPage(p);
+    _orig(p);
   };
 }
 
