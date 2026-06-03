@@ -1432,8 +1432,14 @@ function applyPreset(p,btn){
 function applyCustomRange(){
   var f=document.getElementById('customFrom').value,t=document.getElementById('customTo').value;
   if(!f||!t){alert('Select both dates.');return;}
-  var d1=new Date(f);d1.setHours(0,0,0,0);
-  var d2=new Date(t);d2.setHours(23,59,59,999);
+  // Parse as LOCAL date to avoid UTC timezone shift (India = UTC+5:30)
+  function localDate(str,endOfDay){
+    var p=str.split('-');
+    var d=new Date(+p[0],+p[1]-1,+p[2]);
+    if(endOfDay)d.setHours(23,59,59,999);else d.setHours(0,0,0,0);
+    return d;
+  }
+  var d1=localDate(f,false),d2=localDate(t,true);
   if(d1>d2){alert('From must be before To.');return;}
   dateFrom=d1;dateTo=d2;
   document.querySelectorAll('.preset-btn').forEach(function(b){b.classList.remove('active');});
@@ -2717,7 +2723,9 @@ function exportPendingAging() {
 }
 
 function renderOpsHeatmapOut(D) {
-  const fcs=['MUM','HYD','GGN','KOL','BNG','CHE'];
+  const allFcs=['MUM','HYD','GGN','KOL','BNG','CHE'];
+  const fcs=(window._allowedFCs&&!window._allowedFCs.includes('All'))
+    ?allFcs.filter(f=>window._allowedFCs.includes(f)):allFcs;
   const hours=Array.from({length:16},(_,i)=>i+6);
   const wrap=document.getElementById('ops-heatmap-out');
   if(!wrap) return;
@@ -2749,7 +2757,9 @@ function renderOpsHeatmapOut(D) {
 }
 function renderOpsHeatmap(D) {
   _heatmapData=D;
-  const fcs=['MUM','HYD','GGN','KOL','BNG','CHE'];
+  const allFcs=['MUM','HYD','GGN','KOL','BNG','CHE'];
+  const fcs=(window._allowedFCs&&!window._allowedFCs.includes('All'))
+    ?allFcs.filter(f=>window._allowedFCs.includes(f)):allFcs;
   const hours=Array.from({length:16},(_,i)=>i+6);
   const grid={};
   D.forEach(r=>{ const h=r._gateInHour; const fc=r['FC']; if(h===null||!fc) return; grid[fc+'_'+h]=(grid[fc+'_'+h]||0)+1; });
