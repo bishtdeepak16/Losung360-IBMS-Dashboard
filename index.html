@@ -1487,6 +1487,7 @@ function applyFilters(){
     if(apt&&r['Appt Type']!==apt)return false;
     return true;
   });
+  console.log('[Filter] dateFrom=',dateFrom,'dateTo=',dateTo,'FILTERED=',FILTERED.length,'of',ALL_DATA.length);
   renderActivePage();
 }
 let ACTIVE_PAGE='cxo';
@@ -1495,6 +1496,23 @@ function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];
 
 function renderActivePage(){try{if(ACTIVE_PAGE==='cxo')renderCXO();else if(ACTIVE_PAGE==='plan')renderPlanner();else renderOps();}catch(e){console.error(e);}}
 function switchPage(p){
+  // Save current date range for the view being left
+  if (ACTIVE_PAGE && ACTIVE_PAGE !== p) {
+    window._viewDateRange = window._viewDateRange || {};
+    window._viewDateRange[ACTIVE_PAGE] = {from: dateFrom, to: dateTo};
+    // Reset to 2026 YTD for the new view
+    dateFrom = new Date(2026, 0, 1); dateFrom.setHours(0,0,0,0);
+    dateTo = new Date(); dateTo.setHours(23,59,59,999);
+    // Update sidebar active state
+    document.querySelectorAll('.sidebar-date-item').forEach(el=>el.classList.remove('active'));
+    const ytdEl = document.getElementById('sdFrom2026');
+    if (ytdEl) ytdEl.classList.add('active');
+    // Update custom inputs
+    const dF=document.getElementById('customFrom'); if(dF) dF.value='';
+    const dT=document.getElementById('customTo');   if(dT) dT.value='';
+    const badge=document.getElementById('activeRangeBadge');
+    if(badge) badge.classList.remove('show');
+  }
   ACTIVE_PAGE=p;
   const pageMap={cxo:'pageCxo',plan:'pagePlan',ops:'pageOps'};
   const navMap={cxo:'navCxo',plan:'navPlan',ops:'navOps'};
@@ -3060,9 +3078,9 @@ function sidebarPreset(p) {
   else if (p==='from2026') { dateFrom=new Date('2026-01-01'); dateFrom.setHours(0,0,0,0); dateTo=d1(now); }
   else if (p==='all') { dateFrom=null; dateTo=null; }
   
-  // Update date inputs
-  if (dateFrom) { const dF=document.getElementById('dateFrom'); if(dF) dF.value=fmtDate(dateFrom).substring(0,10); }
-  if (dateTo)   { const dT=document.getElementById('dateTo');   if(dT) dT.value=fmtDate(dateTo).substring(0,10); }
+  // Update custom date inputs display
+  const dF=document.getElementById('customFrom'); if(dF) dF.value=dateFrom?fmtDate(dateFrom):'';
+  const dT=document.getElementById('customTo');   if(dT) dT.value=dateTo?fmtDate(dateTo):'';
   
   applyFilters();
 }
