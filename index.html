@@ -1432,25 +1432,18 @@ function applyPreset(p,btn){
 function applyCustomRange(){
   var f=document.getElementById('customFrom').value,t=document.getElementById('customTo').value;
   if(!f||!t){alert('Select both dates.');return;}
-  // Parse as LOCAL date to avoid UTC timezone shift (India = UTC+5:30)
-  function localDate(str,endOfDay){
-    var p=str.split('-');
-    var d=new Date(+p[0],+p[1]-1,+p[2]);
-    if(endOfDay)d.setHours(23,59,59,999);else d.setHours(0,0,0,0);
-    return d;
-  }
-  var d1=localDate(f,false),d2=localDate(t,true);
+  var p1=f.split('-'),p2=t.split('-');
+  var d1=new Date(+p1[0],+p1[1]-1,+p1[2]); d1.setHours(0,0,0,0);
+  var d2=new Date(+p2[0],+p2[1]-1,+p2[2]); d2.setHours(23,59,59,999);
   if(d1>d2){alert('From must be before To.');return;}
-  dateFrom=d1;dateTo=d2;
+  dateFrom=d1; dateTo=d2;
   document.querySelectorAll('.sidebar-date-item').forEach(function(b){b.classList.remove('active');});
-  document.getElementById('activeRangeBadge').classList.add('show');
-  document.getElementById('activeRangeText').textContent=f+' to '+t;
   applyFilters();
 }
 function clearCustomRange(){
   document.getElementById('customFrom').value='';
   document.getElementById('customTo').value='';
-  applyPreset('ytd2026',document.getElementById('preset2026YTD'));
+  sidebarPreset('from2026');
 }
 
 
@@ -1509,14 +1502,14 @@ function switchPage(p){
   // Scroll to top of page content on every page switch
   const pc = document.querySelector('.page-content');
   if (pc) { pc.scrollTop = 0; window.scrollTo(0, 0); }
-  // All pages default to 2026 YTD
-  if(p==='plan'||p==='ops'){
-    dateFrom=new Date('2026-01-01');dateFrom.setHours(0,0,0,0);
-    dateTo=new Date();dateTo.setHours(23,59,59,999);
-    document.querySelectorAll('.sidebar-date-item').forEach(el=>el.classList.remove('active'));
-    const sdEl=document.getElementById('sdFrom2026');if(sdEl)sdEl.classList.add('active');
-  }
-  if(ALL_DATA.length) renderActivePage();
+  // All views reset to 2026 YTD on switch
+  dateFrom=new Date(2026,0,1); dateFrom.setHours(0,0,0,0);
+  dateTo=new Date(); dateTo.setHours(23,59,59,999);
+  document.querySelectorAll('.sidebar-date-item').forEach(function(el){el.classList.remove('active');});
+  var sdEl=document.getElementById('sdFrom2026'); if(sdEl)sdEl.classList.add('active');
+  var dF=document.getElementById('customFrom'); if(dF) dF.value='';
+  var dT=document.getElementById('customTo');   if(dT) dT.value='';
+  if(ALL_DATA.length) applyFilters(); // re-filter with new dates before rendering
 }
 
 // ── RENDER FUNCTIONS ──────────────────────
@@ -3038,16 +3031,7 @@ window.addEventListener('load',()=>{
 
 
 function resetDateAndSwitch(p) {
-  dateFrom = new Date(2026, 0, 1); dateFrom.setHours(0,0,0,0);
-  dateTo = new Date(); dateTo.setHours(23,59,59,999);
-  document.querySelectorAll('.sidebar-date-item').forEach(function(el){el.classList.remove('active');});
-  var ytdEl = document.getElementById('sdFrom2026');
-  if (ytdEl) ytdEl.classList.add('active');
-  var dF=document.getElementById('customFrom'); if(dF) dF.value='';
-  var dT=document.getElementById('customTo');   if(dT) dT.value='';
-  var badge=document.getElementById('activeRangeBadge');
-  if(badge) badge.classList.remove('show');
-  switchPage(p);
+  switchPage(p); // switchPage now handles YTD reset internally
 }
 
 // ── SIDEBAR DATE PRESETS ─────────────────────
