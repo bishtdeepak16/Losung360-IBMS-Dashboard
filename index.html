@@ -2945,8 +2945,8 @@ function renderDoughnutCJS(canvasId, labels, values, colors, opts={}) {
           borderColor: isDarkMode() ? '#252840' : '#ccd0e8',
           borderWidth: 1,
           callbacks: {
-            title: () => '',
-            label: info => ` ${info.label}: ${info.raw.toLocaleString('en-IN')} (${(info.raw/total*100).toFixed(1)}%)`
+            title: items => items.length ? items[0].label : '',
+            label: info => ` ${info.raw.toLocaleString('en-IN')} units (${(info.raw/total*100).toFixed(1)}%)`
           }
         }
       }
