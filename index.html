@@ -1733,7 +1733,6 @@ function renderCatChart(){
   });
   renderDoughnutCJS('cxo-category',labels,sorted.map(x=>x[1][key]),sorted.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]),{legendPos:'right',smallLegend:true});
   addExportBtn('cxo-category', 'Volume_Item_Category');
-  addExportBtn('cxo-category','Volume_Item_Category');
 }
 function renderCXOCategory(D) {
   _catData=D;
@@ -2945,7 +2944,7 @@ function renderDoughnutCJS(canvasId, labels, values, colors, opts={}) {
           bodyColor: textColor(),
           borderColor: isDarkMode() ? '#252840' : '#ccd0e8',
           borderWidth: 1,
-          callbacks: { label: info => ` ${info.label}: ${info.raw} (${(info.raw/total*100).toFixed(1)}%)` }
+          callbacks: { label: info => ` ${info.label} (${(info.raw/total*100).toFixed(1)}%): ${info.raw.toLocaleString('en-IN')}` }
         }
       }
     }
