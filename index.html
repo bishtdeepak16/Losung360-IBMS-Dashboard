@@ -1250,10 +1250,11 @@ function _openApptClassModal(data) {
     return c;
   });
 
-  let sortBy = 'immediate';
+  let sortBy = '_original'; // default = original order = total appts descending
   let modalChart = null;
 
   function getSorted() {
+    if (sortBy === '_original') return [...clients]; // preserve data order (by total appts)
     return [...clients].sort((a,b) => (b[sortBy]||0) - (a[sortBy]||0));
   }
 
@@ -1331,6 +1332,7 @@ function _openApptClassModal(data) {
     <div style="display:flex;align-items:center;gap:7px;margin-right:40px;">
       <span style="font-size:11px;color:var(--text3);font-weight:600;white-space:nowrap;">Sort by</span>
       <select id="appt-cls-sort-sel" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text1);cursor:pointer;outline:none;font-weight:600;">
+        <option value="_original">Total Appts ↓</option>
         <option value="immediate">Immediate %</option>
         <option value="advance">Advance %</option>
         <option value="null">Null %</option>
@@ -1732,24 +1734,27 @@ window._cxoTrendMetric = window._cxoTrendMetric || 'volume';
 function renderCXOTrend(D) {
   // ── Inject slicer pills once ──────────────────────────────
   const card = document.getElementById('cxo-trend')?.closest('.cc');
-  if (card && !card.querySelector('#cxo-trend-slicer')) {
-    const slicer = document.createElement('div');
-    slicer.id = 'cxo-trend-slicer';
-    slicer.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 12px;padding:0 2px;';
-    _TREND_METRICS.forEach(m => {
-      const btn = document.createElement('button');
-      btn.className = 'trend-pill';
-      btn.dataset.metric = m.id;
-      btn.textContent = m.label;
-      btn.onclick = () => { window._cxoTrendMetric = m.id; renderCXOTrend(FILTERED); };
-      slicer.appendChild(btn);
-    });
-    const canvasWrap = document.getElementById('cxo-trend')?.parentElement;
-    if (canvasWrap) card.insertBefore(slicer, canvasWrap);
+  // ── Inject dropdown slicer once — sits left of Export Excel in the header row ──
+  if (card && !document.getElementById('cxo-trend-sel')) {
+    const row = card.querySelector('.cc-row');
+    if (row) {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'margin-left:auto;display:flex;align-items:center;gap:7px;padding-right:132px;flex-shrink:0;';
+      wrap.innerHTML = `<label for="cxo-trend-sel" style="font-size:10px;color:var(--text3);font-weight:600;white-space:nowrap;">View</label>`
+        + `<select id="cxo-trend-sel" style="font-size:10px;padding:4px 8px 4px 6px;border-radius:8px;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text1);cursor:pointer;outline:none;font-weight:600;max-width:155px;">`
+        + _TREND_METRICS.map(m=>`<option value="${m.id}">${m.label}</option>`).join('')
+        + `</select>`;
+      row.appendChild(wrap);
+      document.getElementById('cxo-trend-sel').onchange = e => {
+        window._cxoTrendMetric = e.target.value;
+        renderCXOTrend(FILTERED);
+      };
+    }
   }
-  // Update active pill + sub-text
+  // Sync dropdown value + update sub-text
   const curMeta = _TREND_METRICS.find(m => m.id === window._cxoTrendMetric) || _TREND_METRICS[0];
-  document.querySelectorAll('.trend-pill').forEach(b => b.classList.toggle('active', b.dataset.metric === window._cxoTrendMetric));
+  const trendSel = document.getElementById('cxo-trend-sel');
+  if (trendSel) trendSel.value = window._cxoTrendMetric;
   const subEl = card?.querySelector('.cc-sub');
   if (subEl) subEl.textContent = curMeta.sub;
 
