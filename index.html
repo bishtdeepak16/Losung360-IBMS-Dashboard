@@ -834,7 +834,7 @@ select:hover,select:focus{border-color:var(--orange);}
       <div class="kpi-grid kpi-grid-5">
         <div class="kc teal"><div class="kc-icon-box">📋</div><div class="kc-body"><div class="kc-lbl">Total Appointments</div><div class="kc-val" id="cxo-units">—</div><div class="kc-sub">Count of Appt IDs</div></div></div>
         <div class="kc green"><div class="kc-icon-box">✅</div><div class="kc-body"><div class="kc-lbl">Appt Fulfilment %</div><div class="kc-val" id="cxo-fulfil">—</div><div class="kc-sub" id="cxo-fulfil-sub">Gate-Ins / Scheduled</div></div></div>
-        <div class="kc orange"><div class="kc-icon-box">📅</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Scheduled Date Adherence</div><div class="kc-val" id="cxo-adherence">—</div><div class="kc-sub">Showed on correct day</div></div></div>
+        <div class="kc orange"><div class="kc-icon-box">📅</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Scheduled Date Adherence</div><div class="kc-val" id="cxo-adherence">—</div><div class="kc-sub">Came on correct day / all past appts</div></div></div>
         <div class="kc red"><div class="kc-icon-box">⚠️</div><div class="kc-body"><div class="kc-lbl">Null Rate</div><div class="kc-val" id="cxo-null">—</div><div class="kc-sub" id="cxo-null-sub">Wasted planning slots</div></div></div>
         <div class="kc purple"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><path d="M6 36V20l12-8 12 8v16H6z" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2.2" stroke-linejoin="round"/><path d="M18 36v-8h6v8" fill="#8b5cf6" stroke="#6d28d9" stroke-width="2"/><path d="M6 22h24" stroke="#6d28d9" stroke-width="2"/><circle cx="38" cy="13" r="4" fill="#7c3aed"/><path d="M34 19c0-2 1.8-4 4-4s4 1.8 4 4l1.5 6" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round"/><path d="M33 26l5-2 4 5" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 25l2.5 9" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round"/><path d="M30 28l13-2" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 2"/></svg></div><div class="kc-body"><div class="kc-lbl">Absconding Rate</div><div class="kc-val" id="cxo-abscond">—</div><div class="kc-sub">Came but didn't complete</div></div></div>
         <div class="kc lime"><div class="kc-icon-box">🎯</div><div class="kc-body"><div class="kc-lbl">Same-Day Clearance %</div><div class="kc-val" id="cxo-sameday">—</div><div class="kc-sub" id="cxo-sameday-sub">Gate-Out = Gate-In date</div></div></div>
@@ -1539,13 +1539,23 @@ function renderCXO() {
   s('cxo-fulfil', fulfil);
   s('cxo-fulfil-sub', withGateIn+' of '+D_past.length+' appts');
 
-  // 3. Scheduled Date Adherence — past-scheduled appts, gate-in on correct day
+  // 3. Scheduled Date Adherence — denominator = ALL past-scheduled appts.
+  // A brand that doesn't come at all is just as much a schedule miss as one
+  // that comes on the wrong day. Using only gate-in appts as denominator was
+  // inflating this to ~98% while ignoring the 13-16% who never showed up.
+  // True adherence = "came on the correct scheduled day / all past appts"
   const withMatchDate = D_past.filter(r=>{
     if (!r._gateIn||!r._schedDate) return false;
     return r._gateIn.toDateString()===r._schedDate.toDateString();
   }).length;
-  const adherence = withGateIn ? (withMatchDate/withGateIn*100).toFixed(1)+'%' : '—';
+  // Also track how many came on a DIFFERENT day (late / early)
+  const wrongDayGateIn = withGateIn - withMatchDate;
+  const adherence = D_past.length ? (withMatchDate/D_past.length*100).toFixed(1)+'%' : '—';
   s('cxo-adherence', adherence);
+  // Update sub-text to show breakdown: correct-day / total past appts
+  const adherenceEl = document.querySelector('#cxo-adherence')?.closest('.kc')?.querySelector('.kc-sub');
+  if(adherenceEl) adherenceEl.textContent = withMatchDate+' of '+D_past.length+' past appts'
+    +(wrongDayGateIn>0?' · '+wrongDayGateIn+' came wrong day':'');
 
   // 4. Null Rate — past-scheduled appts only.
   // Appts the brand rescheduled to a future date are excluded naturally (their
