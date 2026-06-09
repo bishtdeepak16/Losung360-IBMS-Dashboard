@@ -843,7 +843,7 @@ select:hover,select:focus{border-color:var(--orange);}
         <div class="kc red"><div class="kc-icon-box">⚠️</div><div class="kc-body"><div class="kc-lbl">Null Rate</div><div class="kc-val" id="cxo-null">—</div><div class="kc-sub" id="cxo-null-sub">Wasted planning slots</div></div></div>
         <div class="kc purple"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><path d="M6 36V20l12-8 12 8v16H6z" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2.2" stroke-linejoin="round"/><path d="M18 36v-8h6v8" fill="#8b5cf6" stroke="#6d28d9" stroke-width="2"/><path d="M6 22h24" stroke="#6d28d9" stroke-width="2"/><circle cx="38" cy="13" r="4" fill="#7c3aed"/><path d="M34 19c0-2 1.8-4 4-4s4 1.8 4 4l1.5 6" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round"/><path d="M33 26l5-2 4 5" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 25l2.5 9" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round"/><path d="M30 28l13-2" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 2"/></svg></div><div class="kc-body"><div class="kc-lbl">Absconding Rate</div><div class="kc-val" id="cxo-abscond">—</div><div class="kc-sub">Came but didn't complete</div></div></div>
         <div class="kc lime"><div class="kc-icon-box">🎯</div><div class="kc-body"><div class="kc-lbl">Same-Day Clearance %</div><div class="kc-val" id="cxo-sameday">—</div><div class="kc-sub" id="cxo-sameday-sub">Gate-Out = Gate-In date</div></div></div>
-        <div class="kc red"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="6" y="38" width="40" height="6" rx="1.5" fill="#b91c1c" opacity=".5"/><rect x="10" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="36" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="10" y="12" width="32" height="22" rx="2.5" fill="#fca5a5"/><rect x="10" y="12" width="32" height="22" rx="2.5" stroke="#b91c1c" stroke-width="2.5"/><path d="M22 12l-6 12 8-5-8 21" stroke="#b91c1c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 7l6 5M43 7l-6 5" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Damage + Shortage %</div><div class="kc-val" id="cxo-dsrate">—</div><div class="kc-sub">vs Units as per Docs</div></div></div>
+        <div class="kc red"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="6" y="38" width="40" height="6" rx="1.5" fill="#b91c1c" opacity=".5"/><rect x="10" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="36" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="10" y="12" width="32" height="22" rx="2.5" fill="#fca5a5"/><rect x="10" y="12" width="32" height="22" rx="2.5" stroke="#b91c1c" stroke-width="2.5"/><path d="M22 12l-6 12 8-5-8 21" stroke="#b91c1c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 7l6 5M43 7l-6 5" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Damage + Shortage %</div><div class="kc-val" id="cxo-dsrate">—</div><div class="kc-sub">vs Units as per Docs</div></div><button class="ops-dl-btn" onclick="exportDSKPI()" title="Download D+S appointments CSV">⬇ Download</button></div>
         <div class="kc blue"><div class="kc-icon-box">📊</div><div class="kc-body"><div class="kc-lbl">Advance Appts %</div><div class="kc-val" id="cxo-advance">—</div><div class="kc-sub" id="cxo-advance-sub">vs Immediate</div></div></div>
         <div class="kc amber"><div class="kc-icon-box">⏱</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Median Gate-to-Gate TAT</div><div class="kc-val" id="cxo-tat">—</div><div class="kc-sub">Hours (completed only)</div></div></div>
         <div class="kc pink"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="2" y="22" width="30" height="18" rx="2.5" fill="#f9a8d4" stroke="#be185d" stroke-width="2"/><rect x="2" y="22" width="10" height="18" rx="2.5" fill="#db2777" opacity=".7"/><path d="M32 28h6l5 7H32" stroke="#be185d" stroke-width="2" stroke-linejoin="round" fill="#f9a8d4"/><circle cx="11" cy="42" r="5.5" fill="#be185d"/><circle cx="11" cy="42" r="2.5" fill="#fff"/><circle cx="29" cy="42" r="5.5" fill="#be185d"/><circle cx="29" cy="42" r="2.5" fill="#fff"/><path d="M1 27l-4-2M1 32l-5 1M1 37l-4 2" stroke="#be185d" stroke-width="2.5" stroke-linecap="round"/><circle cx="42" cy="16" r="8" fill="#fdf2f8" stroke="#be185d" stroke-width="2.2"/><path d="M42 10v6l4 2.5" stroke="#be185d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Immediate Appts %</div><div class="kc-val" id="cxo-imm-pct">—</div><div class="kc-sub" id="cxo-imm-pct-sub">Walk-in pressure</div></div></div>
@@ -1733,23 +1733,19 @@ window._cxoTrendMetric = window._cxoTrendMetric || 'volume';
 function renderCXOTrend(D) {
   // ── Inject slicer pills once ──────────────────────────────
   const card = document.getElementById('cxo-trend')?.closest('.cc');
-  // ── Inject dropdown slicer once — sits left of Export Excel in the header row ──
+  // ── Inject dropdown slicer once — absolutely positioned left of Export Excel ──
   if (card && !document.getElementById('cxo-trend-sel')) {
-    const row = card.querySelector('.cc-row');
-    if (row) {
-      const wrap = document.createElement('div');
-      wrap.style.cssText = 'margin-left:auto;display:flex;align-items:center;gap:7px;padding-right:128px;flex-shrink:0;';
-      wrap.innerHTML = `<label for="cxo-trend-sel" style="font-size:10px;color:var(--text3);font-weight:600;white-space:nowrap;">View</label>`
-        + `<div style="position:relative;display:inline-flex;align-items:center;">`
-        + `<select id="cxo-trend-sel" style="height:26px;padding:0 26px 0 11px;border-radius:20px;border:1.5px solid #fb923c;background:#fff7ed;color:#ea580c;cursor:pointer;outline:none;font-weight:700;font-size:10px;appearance:none;-webkit-appearance:none;letter-spacing:.01em;transition:all .15s;">`
-        + _TREND_METRICS.map(m=>`<option value="${m.id}">${m.label}</option>`).join('')
-        + `</select><span style="position:absolute;right:9px;pointer-events:none;color:#ea580c;font-size:8px;line-height:1;">▼</span></div>`;
-      row.appendChild(wrap);
-      document.getElementById('cxo-trend-sel').onchange = e => {
-        window._cxoTrendMetric = e.target.value;
-        renderCXOTrend(FILTERED);
-      };
-    }
+    const selWrap = document.createElement('div');
+    selWrap.style.cssText = 'position:absolute;top:10px;right:155px;z-index:10;display:inline-flex;align-items:center;';
+    selWrap.innerHTML = `<div style="position:relative;display:inline-flex;align-items:center;">`
+      + `<select id="cxo-trend-sel" style="height:26px;padding:0 26px 0 11px;border-radius:20px;border:1.5px solid #fb923c;background:#fff7ed;color:#ea580c;cursor:pointer;outline:none;font-weight:700;font-size:10px;appearance:none;-webkit-appearance:none;letter-spacing:.01em;transition:all .15s;white-space:nowrap;">`
+      + _TREND_METRICS.map(m=>`<option value="${m.id}">${m.label}</option>`).join('')
+      + `</select><span style="position:absolute;right:9px;pointer-events:none;color:#ea580c;font-size:8px;line-height:1;">▼</span></div>`;
+    card.appendChild(selWrap);
+    document.getElementById('cxo-trend-sel').onchange = e => {
+      window._cxoTrendMetric = e.target.value;
+      renderCXOTrend(FILTERED);
+    };
   }
   // Sync dropdown value + update sub-text
   const curMeta = _TREND_METRICS.find(m => m.id === window._cxoTrendMetric) || _TREND_METRICS[0];
@@ -3005,6 +3001,30 @@ function renderOpsPendingAging(D) {
   });
   out += '</tbody></table>';
   wrap.innerHTML = out;
+}
+
+// ── D+S KPI CSV download ──────────────────────────────────────
+function exportDSKPI() {
+  if (!FILTERED||!FILTERED.length){alert('No data loaded yet.');return;}
+  const rows = FILTERED.filter(r => (r._damagedUnits>0||r._shortUnits>0));
+  if (!rows.length){alert('No damage or shortage records in current filter.');return;}
+  const cols = ['FC','Client','Appt Type','Appt ID (External)','Scheduled Date',
+    'Gate In Time','Gate Out Time','Status','Updated Status',
+    'Units','Good Units','Damaged Units','Short Units','Total Units',
+    'Vehicle Size','Item Classification'];
+  const header = cols.join(',');
+  const csvRows = rows.map(r => cols.map(col => {
+    const v = r[col]!==undefined ? r[col] : '';
+    const s = String(v).replace(/"/g,'""');
+    return (s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s+'"':s;
+  }).join(','));
+  const csv = '\uFEFF'+[header,...csvRows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='DS_Appointments_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 function exportPendingAging() {
