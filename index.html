@@ -654,6 +654,9 @@ select:hover,select:focus{border-color:var(--orange);}
 
 /* ── Export Excel button ── */
 
+/* ── Scorecard header info marker ── */
+.fc-table th[title] { cursor: help; }
+.fc-table th[title]::selection { background: none; }
 </style>
 </head>
 <body>
@@ -960,8 +963,8 @@ select:hover,select:focus{border-color:var(--orange);}
       
       <div class="cc multi" style="margin-bottom:var(--gap);">
         <div class="cc-title">🏭 FC Operations Scorecard</div>
-        <div class="cc-sub" style="margin-bottom:14px;">Per-FC breakdown — TAT, manpower, damage, clearance</div>
-        <table class="fc-table"><thead><tr><th>Rank</th><th>FC</th><th>Appts</th><th>Completed</th><th>Gate→Dock (hr)</th><th>Unload (hr)</th><th>Total TAT (hr)</th><th>Avg Team Size</th><th>Dmg %</th><th>Same-Day %</th></tr></thead><tbody id="ops-fc-tbody"></tbody></table>
+        <div class="cc-sub" style="margin-bottom:14px;">Per-FC breakdown — TAT, manpower, damage, clearance · <span style="color:var(--text3);font-size:10px;">Gate→Dock = Avg · Unload TAT = Median · Total TAT = Median · hover column ⓘ for detail</span></div>
+        <table class="fc-table"><thead><tr><th>Rank</th><th>FC</th><th>Appts</th><th>Completed</th><th title="Average (mean) minutes from Gate-In to On-Dock Time — all vehicles with both timestamps">Gate→Dock (hr) ⓘ</th><th title="Median hours from Unload Start to Unload End — completed unloads only">Unload (hr) ⓘ</th><th title="Median hours from Gate-In to Gate-Out — completed appointments only">Total TAT (hr) ⓘ</th><th>Avg Team Size</th><th>Dmg %</th><th>Same-Day %</th></tr></thead><tbody id="ops-fc-tbody"></tbody></table>
       </div>
       <div class="two-col">
         <div class="cc orange" style="overflow-y:auto;max-height:700px;"><div class="cc-row"><div><div class="cc-title">📊 TAT Distribution by Client</div><div class="cc-info-btn" id="info-tat-client" title="All Clients Info">ℹ</div><div class="cc-sub">Median Gate-In → Gate-Out hours</div></div></div><div class="rh-ops-sm"><canvas id="ops-tat-fc"></canvas></div></div>
@@ -1517,31 +1520,43 @@ function renderCXO() {
   const D = FILTERED;
   const s = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
 
-  // 1. Total Appointments (Appt ID count)
-  s('cxo-units', fmtK(D.length));
+  // ── Restrict base metrics to appointments scheduled up to YESTERDAY only ──
+  // Reason: future-dated appointments in the filter range inflate total counts
+  // and deflate rates (fulfilment, null, etc.). Appts rescheduled from a null
+  // slot to a future date will have _schedDate >= today → they land in D (not
+  // D_past), so the original null slot no longer appears in D_past either if
+  // the sheet was updated. This gives the "true" retrospective null rate.
+  const _cxoToday = new Date(); _cxoToday.setHours(0,0,0,0);
+  const _cxoYest  = new Date(_cxoToday); _cxoYest.setDate(_cxoYest.getDate()-1); _cxoYest.setHours(23,59,59,999);
+  const D_past = D.filter(r => r._schedDate && r._schedDate <= _cxoYest);
 
-  // 2. Appointment Fulfilment Rate
-  const withGateIn = D.filter(r=>r._gateIn).length;
-  const fulfil = D.length ? (withGateIn/D.length*100).toFixed(1)+'%' : '—';
+  // 1. Total Appointments — scheduled up to yesterday (no future appts)
+  s('cxo-units', fmtK(D_past.length));
+
+  // 2. Appointment Fulfilment Rate — denominator = past-scheduled appts only
+  const withGateIn = D_past.filter(r=>r._gateIn).length;
+  const fulfil = D_past.length ? (withGateIn/D_past.length*100).toFixed(1)+'%' : '—';
   s('cxo-fulfil', fulfil);
-  s('cxo-fulfil-sub', withGateIn+' of '+D.length+' appts');
+  s('cxo-fulfil-sub', withGateIn+' of '+D_past.length+' appts');
 
-  // 3. Scheduled Date Adherence (Gate-In date = Scheduled date)
-  const withMatchDate = D.filter(r=>{
+  // 3. Scheduled Date Adherence — past-scheduled appts, gate-in on correct day
+  const withMatchDate = D_past.filter(r=>{
     if (!r._gateIn||!r._schedDate) return false;
     return r._gateIn.toDateString()===r._schedDate.toDateString();
   }).length;
   const adherence = withGateIn ? (withMatchDate/withGateIn*100).toFixed(1)+'%' : '—';
   s('cxo-adherence', adherence);
 
-  // 4. Null Rate — classification: Advance appts that went Null (wasted planned slots)
-  const nullCount = D.filter(r=>r._apptClass==='Null').length;
-  const nullRate = D.length ? (nullCount/D.length*100).toFixed(1)+'%' : '—';
+  // 4. Null Rate — past-scheduled appts only.
+  // Appts the brand rescheduled to a future date are excluded naturally (their
+  // _schedDate moves to future → not in D_past). This gives the true null rate.
+  const nullCount = D_past.filter(r=>r._apptClass==='Null').length;
+  const nullRate = D_past.length ? (nullCount/D_past.length*100).toFixed(1)+'%' : '—';
   s('cxo-null', nullRate);
-  s('cxo-null-sub', nullCount+' of '+D.length+' appts');
+  s('cxo-null-sub', nullCount+' of '+D_past.length+' past appts');
 
-  // 5. Absconding Rate
-  const abscondCount = D.filter(r=>r['Absconding']&&String(r['Absconding']).toLowerCase()!=='false'&&String(r['Absconding']).trim()!=='').length;
+  // 5. Absconding Rate — use D_past gate-ins as base
+  const abscondCount = D_past.filter(r=>r['Absconding']&&String(r['Absconding']).toLowerCase()!=='false'&&String(r['Absconding']).trim()!=='').length;
   const abscondRate = withGateIn ? (abscondCount/withGateIn*100).toFixed(1)+'%' : '—';
   s('cxo-abscond', abscondRate);
 
@@ -1563,23 +1578,22 @@ function renderCXO() {
   const dsSubEl = document.querySelector('#cxo-dsrate')?.closest('.kc')?.querySelector('.kc-sub');
   if(dsSubEl) dsSubEl.textContent = fmtK(dmgShort)+' units of '+fmtK(totalUnitsAll)+' total';
 
-  // 8. Advance % / Immediate % — by Appt Classification (not raw Appt Type)
-  // Classification: Advance=Advance+notNull, Null=Advance+Null, Immediate=Imm+notNull, ImmAndNull=Imm+Null
-  const advCount  = D.filter(r=>r._apptClass==='Advance').length;
-  const immCount  = D.filter(r=>r._apptClass==='Immediate').length;
-  const nullCls   = D.filter(r=>r._apptClass==='Null').length;
-  const immNull   = D.filter(r=>r._apptClass==='Immediate and Null').length;
-  s('cxo-advance', D.length ? (advCount/D.length*100).toFixed(1)+'%' : '—');
+  // 8. Advance % / Immediate % — past-scheduled appts (D_past)
+  const advCount  = D_past.filter(r=>r._apptClass==='Advance').length;
+  const immCount  = D_past.filter(r=>r._apptClass==='Immediate').length;
+  const nullCls   = D_past.filter(r=>r._apptClass==='Null').length;
+  const immNull   = D_past.filter(r=>r._apptClass==='Immediate and Null').length;
+  s('cxo-advance', D_past.length ? (advCount/D_past.length*100).toFixed(1)+'%' : '—');
   s('cxo-advance-sub', 'Adv:'+advCount+' Imm:'+immCount);
 
-  // 9. Median TAT
+  // 9. Median TAT — naturally past (only completed appts have _tatHrs)
   const tatArr = D.filter(r=>r._tatHrs>0).map(r=>r._tatHrs);
   s('cxo-tat', tatArr.length ? median(tatArr).toFixed(1)+' hr' : '—');
 
-  // 10. Immediate Appts %
-  const immPct = D.length ? (D.filter(r=>r['Appt Type']==='Immediate').length/D.length*100).toFixed(1)+'%' : '—';
+  // 10. Immediate Appts % — past-scheduled appts (D_past)
+  const immPct = D_past.length ? (D_past.filter(r=>r['Appt Type']==='Immediate').length/D_past.length*100).toFixed(1)+'%' : '—';
   s('cxo-imm-pct', immPct);
-  s('cxo-imm-pct-sub', 'of '+D.length+' total appts');
+  s('cxo-imm-pct-sub', 'of '+D_past.length+' past appts');
 
   // Charts
   renderCXOTrend(D);
@@ -1616,11 +1630,43 @@ function renderCXOTrend(D) {
 
 function renderCXOFCVol(D) {
   const fcs=['MUM','HYD','GGN','KOL','BNG','CHE'];
-  const vals=fcs.map(fc=>D.filter(r=>r['FC']===fc).length);
+  const apptsByFC = fcs.map(fc=>D.filter(r=>r['FC']===fc).length);
+  const unitsByFC = fcs.map(fc=>D.filter(r=>r['FC']===fc).reduce((a,r)=>a+r._goodUnits,0));
   const fcVolCanvas = document.getElementById('cxo-fc-vol');
   if(fcVolCanvas){ fcVolCanvas.style.height='240px'; fcVolCanvas.parentElement.style.height='240px'; }
-  renderHBarsCJS('cxo-fc-vol',fcs,vals,fcs.map(fc=>FC_COLORS[fc]+'cc'),{suffix:' appts',noTickSuffix:true,maxRot:0});
-  addExportBtn('cxo-fc-vol', 'Volume_by_FC');
+  // Custom chart so tooltip can show BOTH appts + units for each FC
+  destroyChart('cxo-fc-vol');
+  const canvas = document.getElementById('cxo-fc-vol');
+  if(!canvas) return;
+  const tc = textColor(), gc = gridColor();
+  const maxLabelLen = fcs.reduce((m,l)=>(l.length>m?l.length:m),0);
+  const leftPad = Math.min(Math.max(maxLabelLen*7.5,100),220);
+  charts['cxo-fc-vol'] = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: { labels: fcs, datasets: [{ data: apptsByFC, backgroundColor: fcs.map(fc=>FC_COLORS[fc]+'cc'), borderRadius: 5 }] },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      animation: { duration: 400 }, layout: { padding: { left: 0, bottom: 0 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: bgCard(), titleColor: tc, bodyColor: tc,
+          borderColor: isDarkMode()?'#252840':'#ccd0e8', borderWidth: 1,
+          callbacks: {
+            title: items => items[0].label,
+            label: item => {
+              const i = item.dataIndex;
+              return [`  ${apptsByFC[i]} appts`, `  ${fmtK(unitsByFC[i])} good units`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid:{color:gc}, ticks:{color:tc,font:{size:10},maxRotation:0,callback:v=>v}, border:{color:gc} },
+        y: { grid:{display:false}, afterFit(axis){axis.width=leftPad;}, ticks:{color:tc,font:{size:10,weight:'600'}}, border:{color:gc} }
+      }
+    }
+  });
   addExportBtn('cxo-fc-vol','Volume_by_FC');
 }
 
@@ -1782,8 +1828,11 @@ function renderPlanner() {
   const leadArr = D.filter(r=>r._leadDays!==null&&r._leadDays!==undefined).map(r=>r._leadDays);
   s('plan-lead', leadArr.length ? (leadArr.reduce((a,v)=>a+v,0)/leadArr.length).toFixed(1)+' d' : '—');
 
-  // 6. Brand Show Rate
-  const showRate = D.length ? (D.filter(r=>r._gateIn).length/D.length*100).toFixed(1)+'%' : '—';
+  // 6. Brand Show Rate — denominator = appts scheduled up to yesterday only
+  // (future appts haven't had a chance to show up yet; they'd deflate the rate)
+  const _planYest = new Date(today); _planYest.setDate(_planYest.getDate()-1); _planYest.setHours(23,59,59,999);
+  const D_plan_past = D.filter(r => r._schedDate && r._schedDate <= _planYest);
+  const showRate = D_plan_past.length ? (D_plan_past.filter(r=>r._gateIn).length/D_plan_past.length*100).toFixed(1)+'%' : '—';
   s('plan-show', showRate);
 
   // 7. Units Variance
