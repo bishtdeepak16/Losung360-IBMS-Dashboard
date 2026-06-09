@@ -1657,8 +1657,7 @@ function renderCXO() {
   const adherence = D_past_adv.length ? (withMatchDate/D_past_adv.length*100).toFixed(1)+'%' : '—';
   s('cxo-adherence', adherence);
   const adherenceEl = document.querySelector('#cxo-adherence')?.closest('.kc')?.querySelector('.kc-sub');
-  if(adherenceEl) adherenceEl.textContent = withMatchDate+' of '+D_past_adv.length+' adv appts'
-    +(wrongDayAdv>0?' · '+wrongDayAdv+' came wrong day':'');
+  if(adherenceEl) adherenceEl.textContent = withMatchDate+' of '+D_past_adv.length+' adv appts';
 
   // 4. Null Rate — past-scheduled appts only.
   // Appts the brand rescheduled to a future date are excluded naturally (their
@@ -1739,11 +1738,12 @@ function renderCXOTrend(D) {
     const row = card.querySelector('.cc-row');
     if (row) {
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'margin-left:auto;display:flex;align-items:center;gap:7px;padding-right:132px;flex-shrink:0;';
+      wrap.style.cssText = 'margin-left:auto;display:flex;align-items:center;gap:7px;padding-right:128px;flex-shrink:0;';
       wrap.innerHTML = `<label for="cxo-trend-sel" style="font-size:10px;color:var(--text3);font-weight:600;white-space:nowrap;">View</label>`
-        + `<select id="cxo-trend-sel" style="font-size:10px;padding:4px 8px 4px 6px;border-radius:8px;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text1);cursor:pointer;outline:none;font-weight:600;max-width:155px;">`
+        + `<div style="position:relative;display:inline-flex;align-items:center;">`
+        + `<select id="cxo-trend-sel" style="height:26px;padding:0 26px 0 11px;border-radius:20px;border:1.5px solid #fb923c;background:#fff7ed;color:#ea580c;cursor:pointer;outline:none;font-weight:700;font-size:10px;appearance:none;-webkit-appearance:none;letter-spacing:.01em;transition:all .15s;">`
         + _TREND_METRICS.map(m=>`<option value="${m.id}">${m.label}</option>`).join('')
-        + `</select>`;
+        + `</select><span style="position:absolute;right:9px;pointer-events:none;color:#ea580c;font-size:8px;line-height:1;">▼</span></div>`;
       row.appendChild(wrap);
       document.getElementById('cxo-trend-sel').onchange = e => {
         window._cxoTrendMetric = e.target.value;
