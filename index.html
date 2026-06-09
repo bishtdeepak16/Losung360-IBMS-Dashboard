@@ -657,6 +657,11 @@ select:hover,select:focus{border-color:var(--orange);}
 /* ── Scorecard header info marker ── */
 .fc-table th[title] { cursor: help; }
 .fc-table th[title]::selection { background: none; }
+
+/* ── Monthly trend slicer pills ── */
+.trend-pill { padding:4px 11px;border-radius:20px;border:1.5px solid var(--card-border);background:transparent;color:var(--text2);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.01em;line-height:1.4; }
+.trend-pill.active { background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 8px rgba(249,115,22,.3); }
+.trend-pill:hover:not(.active) { background:var(--orange-tint);border-color:var(--accent);color:var(--accent); }
 </style>
 </head>
 <body>
@@ -834,7 +839,7 @@ select:hover,select:focus{border-color:var(--orange);}
       <div class="kpi-grid kpi-grid-5">
         <div class="kc teal"><div class="kc-icon-box">📋</div><div class="kc-body"><div class="kc-lbl">Total Appointments</div><div class="kc-val" id="cxo-units">—</div><div class="kc-sub">Count of Appt IDs</div></div></div>
         <div class="kc green"><div class="kc-icon-box">✅</div><div class="kc-body"><div class="kc-lbl">Appt Fulfilment %</div><div class="kc-val" id="cxo-fulfil">—</div><div class="kc-sub" id="cxo-fulfil-sub">Gate-Ins / Scheduled</div></div></div>
-        <div class="kc orange"><div class="kc-icon-box">📅</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Scheduled Date Adherence</div><div class="kc-val" id="cxo-adherence">—</div><div class="kc-sub">Came on correct day / all past appts</div></div></div>
+        <div class="kc orange"><div class="kc-icon-box">📅</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Scheduled Date Adherence</div><div class="kc-val" id="cxo-adherence">—</div><div class="kc-sub">Advance appts · came on committed day</div></div></div>
         <div class="kc red"><div class="kc-icon-box">⚠️</div><div class="kc-body"><div class="kc-lbl">Null Rate</div><div class="kc-val" id="cxo-null">—</div><div class="kc-sub" id="cxo-null-sub">Wasted planning slots</div></div></div>
         <div class="kc purple"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><path d="M6 36V20l12-8 12 8v16H6z" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2.2" stroke-linejoin="round"/><path d="M18 36v-8h6v8" fill="#8b5cf6" stroke="#6d28d9" stroke-width="2"/><path d="M6 22h24" stroke="#6d28d9" stroke-width="2"/><circle cx="38" cy="13" r="4" fill="#7c3aed"/><path d="M34 19c0-2 1.8-4 4-4s4 1.8 4 4l1.5 6" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round"/><path d="M33 26l5-2 4 5" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 25l2.5 9" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round"/><path d="M30 28l13-2" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 2"/></svg></div><div class="kc-body"><div class="kc-lbl">Absconding Rate</div><div class="kc-val" id="cxo-abscond">—</div><div class="kc-sub">Came but didn't complete</div></div></div>
         <div class="kc lime"><div class="kc-icon-box">🎯</div><div class="kc-body"><div class="kc-lbl">Same-Day Clearance %</div><div class="kc-val" id="cxo-sameday">—</div><div class="kc-sub" id="cxo-sameday-sub">Gate-Out = Gate-In date</div></div></div>
@@ -1228,40 +1233,133 @@ function buildInfoPanelText(btnId, data) {
 function _openApptClassModal(data) {
   const existingModal = document.getElementById('appt-class-modal');
   if (existingModal) existingModal.remove();
+
+  // ── Parse data into structured objects ──────────────────
+  const clients = data.map(d => {
+    const c = {name:d.name, advance:0, immediate:0, null:0, immNull:0};
+    d.val.split(', ').forEach(p => {
+      const idx = p.indexOf(': ');
+      if (idx < 0) return;
+      const k = p.substring(0,idx).trim();
+      const v = parseFloat(p.substring(idx+2)) || 0;
+      if (k==='Advance')            c.advance   = v;
+      else if (k==='Immediate')     c.immediate = v;
+      else if (k==='Null')          c.null      = v;
+      else if (k==='Immediate and Null') c.immNull = v;
+    });
+    return c;
+  });
+
+  let sortBy = 'immediate';
+  let modalChart = null;
+
+  function getSorted() {
+    return [...clients].sort((a,b) => (b[sortBy]||0) - (a[sortBy]||0));
+  }
+
+  function renderModalChart() {
+    if (modalChart) { modalChart.destroy(); modalChart = null; }
+    const canvas = document.getElementById('appt-class-modal-chart');
+    if (!canvas) return;
+    const sorted = getSorted();
+    const tc = textColor(), gc = gridColor();
+    modalChart = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: sorted.map(c => c.name),
+        datasets: [
+          {label:'Advance',           data:sorted.map(c=>c.advance),   backgroundColor:'#3b82f6', borderRadius:3},
+          {label:'Immediate',         data:sorted.map(c=>c.immediate), backgroundColor:'#f97316', borderRadius:3},
+          {label:'Null',              data:sorted.map(c=>c.null),      backgroundColor:'#dc2626', borderRadius:3},
+          {label:'Immediate & Null',  data:sorted.map(c=>c.immNull),   backgroundColor:'#a78bfa', borderRadius:3},
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {duration:300, easing:'easeInOutQuart'},
+        plugins: {
+          legend: {
+            display: true, position: 'top',
+            labels: {color:tc, font:{size:10,weight:'600'}, boxWidth:10, padding:14,
+                     usePointStyle:true, pointStyle:'circle'}
+          },
+          tooltip: {
+            backgroundColor: bgCard(), titleColor: tc, bodyColor: tc,
+            borderColor: isDarkMode()?'#252840':'#ccd0e8', borderWidth:1, padding:10,
+            callbacks: {
+              title: items => items[0].label,
+              label: item => ` ${item.dataset.label}: ${item.raw.toFixed(1)}%`
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true, max: 100,
+            grid: {color:gc},
+            ticks: {color:tc, font:{size:9}, callback:v=>v+'%'},
+            border: {color:gc}
+          },
+          y: {
+            stacked: true, grid: {display:false},
+            ticks: {color:tc, font:{size:10,weight:'600'}},
+            border: {color:gc}
+          }
+        }
+      }
+    });
+  }
+
+  // ── Build modal DOM ──────────────────────────────────────
   const modal = document.createElement('div');
   modal.id = 'appt-class-modal';
-  modal.style.cssText = `position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);`;
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);';
+
+  const chartH = Math.max(320, clients.length * 46 + 72);
   const box = document.createElement('div');
-  box.style.cssText = `background:var(--card-bg);border-radius:20px;padding:0;width:min(94vw,640px);max-height:80vh;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.22);position:relative;display:flex;flex-direction:column;`;
+  box.style.cssText = 'background:var(--card-bg);border-radius:20px;padding:0;width:min(96vw,800px);max-height:90vh;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.22);position:relative;display:flex;flex-direction:column;';
+
   const header = document.createElement('div');
-  header.style.cssText = `padding:20px 24px 16px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:linear-gradient(135deg,#fff7ed,var(--card-bg));border-radius:20px 20px 0 0;`;
-  header.innerHTML = `<div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,rgba(249,115,22,.15),rgba(249,115,22,.07));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎯</div><div><div style="font-size:15px;font-weight:700;color:var(--text1);letter-spacing:-.01em;">Appt Classification by Client</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">Advance · Immediate · Null · Imm+Null breakdown</div></div>`;
+  header.style.cssText = 'padding:18px 24px 14px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:linear-gradient(135deg,#fff7ed,var(--card-bg));border-radius:20px 20px 0 0;';
+  header.innerHTML = `
+    <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,rgba(249,115,22,.15),rgba(249,115,22,.07));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎯</div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:700;color:var(--text1);letter-spacing:-.01em;">Appt Classification by Client</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">100% stacked — Advance · Immediate · Null · Imm+Null</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;margin-right:40px;">
+      <span style="font-size:11px;color:var(--text3);font-weight:600;white-space:nowrap;">Sort by</span>
+      <select id="appt-cls-sort-sel" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text1);cursor:pointer;outline:none;font-weight:600;">
+        <option value="immediate">Immediate %</option>
+        <option value="advance">Advance %</option>
+        <option value="null">Null %</option>
+        <option value="immNull">Imm+Null %</option>
+      </select>
+    </div>`;
+
   const closeBtn = document.createElement('button');
   closeBtn.innerHTML = '✕';
-  closeBtn.style.cssText = `position:absolute;top:14px;right:16px;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;`;
-  closeBtn.onclick = () => modal.remove();
+  closeBtn.style.cssText = 'position:absolute;top:14px;right:16px;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;';
+  closeBtn.onclick = () => { if(modalChart) modalChart.destroy(); modal.remove(); };
+
   const body = document.createElement('div');
-  body.style.cssText = `overflow-y:auto;padding:12px 0 8px;flex:1;`;
-  const classColors = {Advance:'#3b82f6',Immediate:'#f97316',Null:'#dc2626','Immediate and Null':'#a78bfa'};
-  body.innerHTML = data.map((d,i) => {
-    const parts = d.val.split(', ').map(p => {
-      const idx = p.indexOf(': ');
-      const k = p.substring(0,idx);
-      const v = p.substring(idx+2);
-      const pct = parseFloat(v)||0;
-      const color = classColors[k.trim()]||'#888';
-      return {k:k.trim(),v:v.trim(),pct,color};
-    });
-    const bars = parts.map(p => `<div style="flex:${p.pct||0.5};background:${p.color};height:6px;border-radius:3px;min-width:${p.pct>0?'3':'0'}px;"></div>`).join('');
-    const pills = parts.map(p => `<span style="font-size:10px;font-weight:700;color:${p.color};background:${p.color}18;padding:2px 7px;border-radius:20px;white-space:nowrap;">${p.k}: ${p.v}</span>`).join('');
-    return `<div style="padding:10px 24px;border-bottom:1px solid ${i<data.length-1?'var(--card-border)':'transparent'};transition:background .1s;" onmouseover="this.style.background='var(--orange-tint)'" onmouseout="this.style.background=''"><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><div style="font-size:13px;font-weight:600;color:var(--text1);min-width:90px;">${d.name}</div><div style="flex:1;display:flex;gap:3px;align-items:center;height:6px;border-radius:3px;overflow:hidden;background:var(--card-border);">${bars}</div></div><div style="display:flex;flex-wrap:wrap;gap:5px;">${pills}</div></div>`;
-  }).join('');
+  body.style.cssText = 'padding:16px 20px 20px;overflow:auto;flex:1;';
+  body.innerHTML = `<div style="height:${chartH}px;"><canvas id="appt-class-modal-chart"></canvas></div>`;
+
   box.appendChild(header);
   box.appendChild(closeBtn);
   box.appendChild(body);
   modal.appendChild(box);
-  modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
+  modal.onclick = e => { if(e.target===modal){ if(modalChart) modalChart.destroy(); modal.remove(); } };
   document.body.appendChild(modal);
+
+  // Init chart after DOM is painted
+  setTimeout(() => {
+    renderModalChart();
+    const sel = document.getElementById('appt-cls-sort-sel');
+    if (sel) { sel.value = sortBy; sel.onchange = () => { sortBy = sel.value; renderModalChart(); }; }
+  }, 60);
 }
 // ── CSV Export helper ────────────────────────────────────────
 
@@ -1539,23 +1637,26 @@ function renderCXO() {
   s('cxo-fulfil', fulfil);
   s('cxo-fulfil-sub', withGateIn+' of '+D_past.length+' appts');
 
-  // 3. Scheduled Date Adherence — denominator = ALL past-scheduled appts.
-  // A brand that doesn't come at all is just as much a schedule miss as one
-  // that comes on the wrong day. Using only gate-in appts as denominator was
-  // inflating this to ~98% while ignoring the 13-16% who never showed up.
-  // True adherence = "came on the correct scheduled day / all past appts"
-  const withMatchDate = D_past.filter(r=>{
-    if (!r._gateIn||!r._schedDate) return false;
-    return r._gateIn.toDateString()===r._schedDate.toDateString();
+  // 3. Scheduled Date Adherence — ADVANCE appointments only.
+  // Immediate = same-day walk-ins; their scheduled date is always the gate-in
+  // date so they trivially pass adherence. Including them inflates the metric.
+  // Only Advance appts have a pre-committed future date worth measuring.
+  // Consistent with Null Rate which also only counts Advance-type nulls.
+  //
+  // Denominator = all Advance past-scheduled appts (fulfilled + null)
+  // Numerator   = Advance appts where gate-in date = scheduled date
+  const D_past_adv = D_past.filter(r => r['Appt Type'] === 'Advance');
+  const withMatchDate = D_past_adv.filter(r => {
+    if (!r._gateIn || !r._schedDate) return false;
+    return r._gateIn.toDateString() === r._schedDate.toDateString();
   }).length;
-  // Also track how many came on a DIFFERENT day (late / early)
-  const wrongDayGateIn = withGateIn - withMatchDate;
-  const adherence = D_past.length ? (withMatchDate/D_past.length*100).toFixed(1)+'%' : '—';
+  const advWithGateIn = D_past_adv.filter(r => r._gateIn).length;
+  const wrongDayAdv = advWithGateIn - withMatchDate;
+  const adherence = D_past_adv.length ? (withMatchDate/D_past_adv.length*100).toFixed(1)+'%' : '—';
   s('cxo-adherence', adherence);
-  // Update sub-text to show breakdown: correct-day / total past appts
   const adherenceEl = document.querySelector('#cxo-adherence')?.closest('.kc')?.querySelector('.kc-sub');
-  if(adherenceEl) adherenceEl.textContent = withMatchDate+' of '+D_past.length+' past appts'
-    +(wrongDayGateIn>0?' · '+wrongDayGateIn+' came wrong day':'');
+  if(adherenceEl) adherenceEl.textContent = withMatchDate+' of '+D_past_adv.length+' adv appts'
+    +(wrongDayAdv>0?' · '+wrongDayAdv+' came wrong day':'');
 
   // 4. Null Rate — past-scheduled appts only.
   // Appts the brand rescheduled to a future date are excluded naturally (their
@@ -1614,28 +1715,175 @@ function renderCXO() {
   renderCXOCategory(D);
 }
 
+// ── Monthly Trend slicer metric definitions ──────────────────
+const _TREND_METRICS = [
+  {id:'volume',      label:'📊 Volume',        sub:'Good Units (bars) + Appointments (line)',         color:'#f97316'},
+  {id:'fulfilment',  label:'Fulfilment %',     sub:'Monthly appointment fulfilment rate',             color:'#10b981'},
+  {id:'adherence',   label:'Date Adherence %', sub:'Monthly scheduled date adherence (Advance appts)',color:'#f97316'},
+  {id:'null_rate',   label:'Null Rate %',      sub:'Monthly null rate — Advance wasted slots',        color:'#dc2626'},
+  {id:'sameday',     label:'Same-Day %',       sub:'Monthly same-day clearance rate',                 color:'#8b5cf6'},
+  {id:'ds_rate',     label:'D+S Rate %',       sub:'Monthly damage + shortage rate',                  color:'#ef4444'},
+  {id:'advance_pct', label:'Advance %',        sub:'Monthly advance appointment mix',                 color:'#3b82f6'},
+  {id:'tat',         label:'Median TAT (hr)',  sub:'Monthly median gate-to-gate TAT',                 color:'#06b6d4'},
+  {id:'imm_pct',     label:'Immediate %',      sub:'Monthly immediate appointment mix',               color:'#ec4899'},
+];
+window._cxoTrendMetric = window._cxoTrendMetric || 'volume';
+
 function renderCXOTrend(D) {
+  // ── Inject slicer pills once ──────────────────────────────
+  const card = document.getElementById('cxo-trend')?.closest('.cc');
+  if (card && !card.querySelector('#cxo-trend-slicer')) {
+    const slicer = document.createElement('div');
+    slicer.id = 'cxo-trend-slicer';
+    slicer.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 12px;padding:0 2px;';
+    _TREND_METRICS.forEach(m => {
+      const btn = document.createElement('button');
+      btn.className = 'trend-pill';
+      btn.dataset.metric = m.id;
+      btn.textContent = m.label;
+      btn.onclick = () => { window._cxoTrendMetric = m.id; renderCXOTrend(FILTERED); };
+      slicer.appendChild(btn);
+    });
+    const canvasWrap = document.getElementById('cxo-trend')?.parentElement;
+    if (canvasWrap) card.insertBefore(slicer, canvasWrap);
+  }
+  // Update active pill + sub-text
+  const curMeta = _TREND_METRICS.find(m => m.id === window._cxoTrendMetric) || _TREND_METRICS[0];
+  document.querySelectorAll('.trend-pill').forEach(b => b.classList.toggle('active', b.dataset.metric === window._cxoTrendMetric));
+  const subEl = card?.querySelector('.cc-sub');
+  if (subEl) subEl.textContent = curMeta.sub;
+
+  // ── Aggregate per month ───────────────────────────────────
   const byMonth = {};
-  D.forEach(r=>{
+  D.forEach(r => {
     if (!r._schedDate) return;
     const k = r._schedDate.getFullYear()+'-'+String(r._schedDate.getMonth()+1).padStart(2,'0');
-    if (!byMonth[k]) byMonth[k]={appts:0,units:0};
-    byMonth[k].appts++;
-    byMonth[k].units+=r._goodUnits;
+    if (!byMonth[k]) byMonth[k] = {appts:0,units:0,gateIn:0,matchDate:0,nullCount:0,sameDay:0,dsUnits:0,totalUnits:0,advCount:0,immCount:0,tatArr:[],advTotal:0};
+    const b = byMonth[k];
+    b.appts++;
+    b.units       += (r._goodUnits||0);
+    b.totalUnits  += (r._totalUnits||0);
+    b.dsUnits     += ((r._damagedUnits||0)+(r._shortUnits||0));
+    if (r['Appt Type']==='Advance') b.advTotal++;
+    if (r._apptClass==='Advance')   b.advCount++;
+    if (r._apptClass==='Immediate') b.immCount++;
+    if (r._apptClass==='Null')      b.nullCount++;
+    if (r._gateIn) {
+      b.gateIn++;
+      if (r._schedDate && r._gateIn.toDateString()===r._schedDate.toDateString()) b.matchDate++;
+      if (r._gateOut) {
+        const d1=new Date(r._gateIn); d1.setHours(0,0,0,0);
+        const d2=new Date(r._gateOut); d2.setHours(0,0,0,0);
+        if (d1.getTime()===d2.getTime()) b.sameDay++;
+      }
+    }
+    if (r._tatHrs>0) b.tatArr.push(r._tatHrs);
   });
+
   const months = Object.keys(byMonth).sort();
-  const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const monthLabels=months.map(m=>{const[yr,mo]=m.split('-');return MN[parseInt(mo)-1]+'-'+yr;});
-  renderComboChartCJS('cxo-trend', monthLabels,
-    [{label:'Good Units',data:months.map(m=>byMonth[m].units),backgroundColor:'rgba(249,115,22,.6)',borderColor:'#f97316',borderWidth:1,yAxisID:'y'}],
-    [{label:'Appts',data:months.map(m=>byMonth[m].appts),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.08)',borderWidth:2.5,pointBackgroundColor:'#3b82f6',yAxisID:'y2'}],
-    {maxRotation:30,yColor:'#f97316',y2Color:'#3b82f6',
-     yLabel:'Good Units',y2Label:'Appointments',
-     yTickFmt:(v)=>v>=1000?Math.round(v/1000)+'k':v,
-     y2TickFmt:(v)=>v>=1000?Math.round(v/1000)+'k':v}
-  );
-  addExportBtn('cxo-trend', 'Monthly_Volume_Trend');
+  const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthLabels = months.map(m => { const[yr,mo]=m.split('-'); return MN[+mo-1]+'-'+yr; });
+
+  if (window._cxoTrendMetric === 'volume') {
+    // Default combo bar+line
+    renderComboChartCJS('cxo-trend', monthLabels,
+      [{label:'Good Units',data:months.map(m=>byMonth[m].units),backgroundColor:'rgba(249,115,22,.6)',borderColor:'#f97316',borderWidth:1,yAxisID:'y'}],
+      [{label:'Appts',data:months.map(m=>byMonth[m].appts),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.08)',borderWidth:2.5,pointBackgroundColor:'#3b82f6',yAxisID:'y2'}],
+      {maxRotation:30,yColor:'#f97316',y2Color:'#3b82f6',yLabel:'Good Units',y2Label:'Appointments',
+       yTickFmt:v=>v>=1000?Math.round(v/1000)+'k':v,
+       y2TickFmt:v=>v>=1000?Math.round(v/1000)+'k':v}
+    );
+  } else {
+    // Metric gradient line chart
+    const vals = months.map(m => {
+      const b = byMonth[m];
+      switch(window._cxoTrendMetric) {
+        case 'fulfilment':   return b.appts     ? +((b.gateIn/b.appts)*100).toFixed(1)        : null;
+        case 'adherence':    return b.advTotal  ? +((b.matchDate/b.advTotal)*100).toFixed(1)  : null;
+        case 'null_rate':    return b.appts     ? +((b.nullCount/b.appts)*100).toFixed(1)     : null;
+        case 'sameday':      return b.gateIn    ? +((b.sameDay/b.gateIn)*100).toFixed(1)      : null;
+        case 'ds_rate':      return b.totalUnits? +((b.dsUnits/b.totalUnits)*100).toFixed(1)  : null;
+        case 'advance_pct':  return b.appts     ? +((b.advCount/b.appts)*100).toFixed(1)      : null;
+        case 'tat':          return b.tatArr.length ? +median(b.tatArr).toFixed(1)            : null;
+        case 'imm_pct':      return b.appts     ? +((b.immCount/b.appts)*100).toFixed(1)      : null;
+        default: return null;
+      }
+    });
+    _renderTrendGradientLine('cxo-trend', monthLabels, vals, curMeta);
+  }
   addExportBtn('cxo-trend','Monthly_Volume_Trend');
+}
+
+function _renderTrendGradientLine(canvasId, labels, values, meta) {
+  destroyChart(canvasId);
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const tc = textColor(), gc = gridColor();
+  const color = meta.color;
+  const isPercent = meta.id !== 'tat';
+  const ctx = canvas.getContext('2d');
+  const h = canvas.parentElement?.offsetHeight || 260;
+  // Gradient fill under the line
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0,   color + 'cc');
+  grad.addColorStop(0.45, color + '44');
+  grad.addColorStop(1,   color + '00');
+  charts[canvasId] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: meta.label,
+        data: values,
+        borderColor: color,
+        borderWidth: 2.5,
+        backgroundColor: grad,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: color,
+        pointBorderWidth: 2.5,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: color,
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+        spanGaps: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 500, easing: 'easeInOutQuart' },
+      layout: { padding: { top: 10, right: 14 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: bgCard(),
+          titleColor: tc,
+          bodyColor: color,
+          borderColor: color + '66',
+          borderWidth: 1,
+          padding: 10,
+          displayColors: false,
+          callbacks: {
+            title: items => items[0].label,
+            label: item => item.raw !== null
+              ? ` ${item.raw}${isPercent ? '%' : ' hr'}`
+              : ' No data'
+          }
+        }
+      },
+      scales: {
+        x: { grid:{color:gc}, ticks:{color:tc,font:{size:10},maxRotation:30}, border:{color:gc} },
+        y: {
+          grid: { color: gc },
+          ticks: { color: tc, font:{size:10}, callback: v => v+(isPercent?'%':' hr') },
+          border: { color: gc }
+        }
+      }
+    }
+  });
 }
 
 function renderCXOFCVol(D) {
