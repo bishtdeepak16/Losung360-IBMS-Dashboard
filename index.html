@@ -840,17 +840,17 @@ select:hover,select:focus{border-color:var(--orange);}
         <div class="kc teal"><div class="kc-icon-box">📋</div><div class="kc-body"><div class="kc-lbl">Total Appointments</div><div class="kc-val" id="cxo-units">—</div><div class="kc-sub">Count of Appt IDs</div></div></div>
         <div class="kc green"><div class="kc-icon-box">✅</div><div class="kc-body"><div class="kc-lbl">Appt Fulfilment %</div><div class="kc-val" id="cxo-fulfil">—</div><div class="kc-sub" id="cxo-fulfil-sub">Gate-Ins / Scheduled</div></div></div>
         <div class="kc orange"><div class="kc-icon-box">📅</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Scheduled Date Adherence</div><div class="kc-val" id="cxo-adherence">—</div><div class="kc-sub">Advance appts · came on committed day</div></div></div>
-        <div class="kc red"><div class="kc-icon-box">⚠️</div><div class="kc-body"><div class="kc-lbl">Null Rate</div><div class="kc-val" id="cxo-null">—</div><div class="kc-sub" id="cxo-null-sub">Wasted planning slots</div></div></div>
-        <div class="kc purple"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><path d="M6 36V20l12-8 12 8v16H6z" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2.2" stroke-linejoin="round"/><path d="M18 36v-8h6v8" fill="#8b5cf6" stroke="#6d28d9" stroke-width="2"/><path d="M6 22h24" stroke="#6d28d9" stroke-width="2"/><circle cx="38" cy="13" r="4" fill="#7c3aed"/><path d="M34 19c0-2 1.8-4 4-4s4 1.8 4 4l1.5 6" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round"/><path d="M33 26l5-2 4 5" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 25l2.5 9" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round"/><path d="M30 28l13-2" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 2"/></svg></div><div class="kc-body"><div class="kc-lbl">Absconding Rate</div><div class="kc-val" id="cxo-abscond">—</div><div class="kc-sub">Came but didn't complete</div></div></div>
         <div class="kc lime"><div class="kc-icon-box">🎯</div><div class="kc-body"><div class="kc-lbl">Same-Day Clearance %</div><div class="kc-val" id="cxo-sameday">—</div><div class="kc-sub" id="cxo-sameday-sub">Gate-Out = Gate-In date</div></div></div>
+        <div class="kc amber"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="30" r="17" fill="#fde68a" stroke="#d97706" stroke-width="2.5"/><circle cx="26" cy="30" r="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/><path d="M26 20v10l6 4" stroke="#b45309" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="16" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><rect x="31" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><path d="M14 10h24" stroke="#d97706" stroke-width="2" stroke-linecap="round"/></svg></div><div class="kc-body" style="padding-top:0;"><div class="kc-lbl">Detention Rate</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1px 6px;margin:4px 0 2px;"><div><span style="font-size:8.5px;font-weight:600;color:var(--text3);">D1 </span><span id="cxo-det-d1" style="font-size:15px;font-weight:800;color:#d97706;letter-spacing:-.02em;">—</span></div><div><span style="font-size:8.5px;font-weight:600;color:var(--text3);">D2 </span><span id="cxo-det-d2" style="font-size:15px;font-weight:800;color:#ea580c;letter-spacing:-.02em;">—</span></div><div><span style="font-size:8.5px;font-weight:600;color:var(--text3);">D3 </span><span id="cxo-det-d3" style="font-size:15px;font-weight:800;color:#dc2626;letter-spacing:-.02em;">—</span></div><div><span style="font-size:8px;font-weight:600;color:var(--text3);">D3+ </span><span id="cxo-det-d3p" style="font-size:14px;font-weight:800;color:#7c3aed;letter-spacing:-.02em;">—</span></div></div><div class="kc-sub">Day-wise · % of gate-ins</div></div></div>
         <div class="kc red"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="6" y="38" width="40" height="6" rx="1.5" fill="#b91c1c" opacity=".5"/><rect x="10" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="36" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="10" y="12" width="32" height="22" rx="2.5" fill="#fca5a5"/><rect x="10" y="12" width="32" height="22" rx="2.5" stroke="#b91c1c" stroke-width="2.5"/><path d="M22 12l-6 12 8-5-8 21" stroke="#b91c1c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 7l6 5M43 7l-6 5" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Damage + Shortage %</div><div class="kc-val" id="cxo-dsrate">—</div><div class="kc-sub">vs Units as per Docs</div></div><button class="ops-dl-btn" onclick="exportDSKPI()" title="Download D+S appointments CSV" style="font-size:8px;padding:2px 7px;bottom:8px;right:10px;">⬇ Export</button></div>
-        <div class="kc blue"><div class="kc-icon-box">📊</div><div class="kc-body"><div class="kc-lbl">Advance Appts %</div><div class="kc-val" id="cxo-advance">—</div><div class="kc-sub" id="cxo-advance-sub">vs Immediate</div></div></div>
         <div class="kc amber"><div class="kc-icon-box">⏱</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Median Gate-to-Gate TAT</div><div class="kc-val" id="cxo-tat">—</div><div class="kc-sub">Hours (completed only)</div></div></div>
         <div class="kc pink"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="2" y="22" width="30" height="18" rx="2.5" fill="#f9a8d4" stroke="#be185d" stroke-width="2"/><rect x="2" y="22" width="10" height="18" rx="2.5" fill="#db2777" opacity=".7"/><path d="M32 28h6l5 7H32" stroke="#be185d" stroke-width="2" stroke-linejoin="round" fill="#f9a8d4"/><circle cx="11" cy="42" r="5.5" fill="#be185d"/><circle cx="11" cy="42" r="2.5" fill="#fff"/><circle cx="29" cy="42" r="5.5" fill="#be185d"/><circle cx="29" cy="42" r="2.5" fill="#fff"/><path d="M1 27l-4-2M1 32l-5 1M1 37l-4 2" stroke="#be185d" stroke-width="2.5" stroke-linecap="round"/><circle cx="42" cy="16" r="8" fill="#fdf2f8" stroke="#be185d" stroke-width="2.2"/><path d="M42 10v6l4 2.5" stroke="#be185d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Immediate Appts %</div><div class="kc-val" id="cxo-imm-pct">—</div><div class="kc-sub" id="cxo-imm-pct-sub">Walk-in pressure</div></div></div>
+        <div class="kc blue"><div class="kc-icon-box">📊</div><div class="kc-body"><div class="kc-lbl">Advance Appts %</div><div class="kc-val" id="cxo-advance">—</div><div class="kc-sub" id="cxo-advance-sub">vs Immediate</div></div></div>
+        <div class="kc red"><div class="kc-icon-box">⚠️</div><div class="kc-body"><div class="kc-lbl">Null Rate</div><div class="kc-val" id="cxo-null">—</div><div class="kc-sub" id="cxo-null-sub">Wasted planning slots</div></div></div>
       </div>
       <div class="two-col">
         <div class="cc orange"><div class="cc-row"><div><div class="cc-title">📈 Monthly Volume Trend</div><div class="cc-sub">Good Units (bars) + Appointments (line)</div></div></div><div class="rh"><canvas id="cxo-trend"></canvas></div></div>
-        <div class="cc teal"><div class="cc-row"><div><div class="cc-title">🏭 Volume by FC</div><div class="cc-sub">Total Appointments per Fulfilment Centre</div></div></div><div class="rh-sm"><canvas id="cxo-fc-vol"></canvas></div></div>
+        <div class="cc teal"><div class="cc-row"><div><div class="cc-title">🏭 Volume by FC (Good Units)</div><div class="cc-sub">Good Units per Fulfilment Centre</div></div></div><div class="rh-sm"><canvas id="cxo-fc-vol"></canvas></div></div>
       </div>
       <div class="two-col">
         <div class="cc blue"><div class="cc-row"><div><div class="cc-title">👥 Top Clients by Volume</div><div class="cc-sub">Total Appointments — top 10</div><div class="cc-info-btn" id="info-top-clients" title="All Clients Info">ℹ</div></div></div><div class="rh-lg"><canvas id="cxo-client-vol"></canvas></div></div>
@@ -1236,7 +1236,7 @@ function _openApptClassModal(data) {
 
   // ── Parse data into structured objects ──────────────────
   const clients = data.map(d => {
-    const c = {name:d.name, advance:0, immediate:0, null:0, immNull:0};
+    const c = {name:d.name, advance:0, immediate:0, null:0, immNull:0, total:d.total||0};
     d.val.split(', ').forEach(p => {
       const idx = p.indexOf(': ');
       if (idx < 0) return;
@@ -1290,7 +1290,11 @@ function _openApptClassModal(data) {
             backgroundColor: bgCard(), titleColor: tc, bodyColor: tc,
             borderColor: isDarkMode()?'#252840':'#ccd0e8', borderWidth:1, padding:10,
             callbacks: {
-              title: items => items[0].label,
+              title: items => {
+                const sorted = getSorted();
+                const tot = sorted[items[0].dataIndex]?.total || 0;
+                return `${items[0].label}${tot?' · '+tot.toLocaleString()+' appts':''}`;
+              },
               label: item => ` ${item.dataset.label}: ${item.raw.toFixed(1)}%`
             }
           }
@@ -1667,10 +1671,8 @@ function renderCXO() {
   s('cxo-null', nullRate);
   s('cxo-null-sub', nullCount+' of '+D_past.length+' past appts');
 
-  // 5. Absconding Rate — use D_past gate-ins as base
-  const abscondCount = D_past.filter(r=>r['Absconding']&&String(r['Absconding']).toLowerCase()!=='false'&&String(r['Absconding']).trim()!=='').length;
-  const abscondRate = withGateIn ? (abscondCount/withGateIn*100).toFixed(1)+'%' : '—';
-  s('cxo-abscond', abscondRate);
+  // 5. Detention Rate — day-wise split of gate-ins not cleared same day
+  renderDetentionKPI(D_past);
 
   // 6. Same-Day Clearance Rate (primary SLA)
   const completed = D.filter(r=>r._gateOut&&r._gateIn);
@@ -1714,6 +1716,36 @@ function renderCXO() {
   renderCXODiscipline(D);
   renderCXODSByFC(D);
   renderCXOCategory(D);
+}
+
+// ── Detention Rate KPI — day-wise breakdown of non-same-day gate-ins ─────────
+function renderDetentionKPI(D) {
+  const s = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  const withGateIn = D.filter(r => r._gateIn);
+  const total = withGateIn.length;
+  if (!total) { ['cxo-det-d1','cxo-det-d2','cxo-det-d3','cxo-det-d3p'].forEach(id=>s(id,'—')); return; }
+  const now = new Date(); now.setHours(0,0,0,0);
+  let d1=0, d2=0, d3=0, d3p=0;
+  withGateIn.forEach(r => {
+    const gIn = new Date(r._gateIn); gIn.setHours(0,0,0,0);
+    let diff;
+    if (r._gateOut) {
+      const gOut = new Date(r._gateOut); gOut.setHours(0,0,0,0);
+      diff = Math.round((gOut - gIn) / 86400000);
+    } else {
+      diff = Math.round((now - gIn) / 86400000);
+    }
+    if (diff <= 0) return; // same-day cleared — skip
+    if (diff === 1) d1++;
+    else if (diff === 2) d2++;
+    else if (diff === 3) d3++;
+    else d3p++;
+  });
+  const pct = v => (v/total*100).toFixed(1)+'%';
+  s('cxo-det-d1',  pct(d1));
+  s('cxo-det-d2',  pct(d2));
+  s('cxo-det-d3',  pct(d3));
+  s('cxo-det-d3p', pct(d3p));
 }
 
 // ── Monthly Trend slicer metric definitions ──────────────────
@@ -1763,15 +1795,17 @@ function renderCXOTrend(D) {
     const b = byMonth[k];
     b.appts++;
     b.units       += (r._goodUnits||0);
-    b.totalUnits  += (r._totalUnits||0);
-    b.dsUnits     += ((r._damagedUnits||0)+(r._shortUnits||0));
     if (r['Appt Type']==='Advance') b.advTotal++;
     if (r._apptClass==='Advance')   b.advCount++;
     if (r._apptClass==='Immediate') b.immCount++;
     if (r._apptClass==='Null')      b.nullCount++;
     if (r._gateIn) {
       b.gateIn++;
-      if (r._schedDate && r._gateIn.toDateString()===r._schedDate.toDateString()) b.matchDate++;
+      // D+S: only count for gate-in rows, use _units (raw column) as denominator — same as KPI card
+      b.totalUnits += (r._units||0);
+      b.dsUnits    += ((r._damagedUnits||0)+(r._shortUnits||0));
+      // Adherence: only Advance type appointments (Immediate always match trivially)
+      if (r['Appt Type']==='Advance' && r._schedDate && r._gateIn.toDateString()===r._schedDate.toDateString()) b.matchDate++;
       if (r._gateOut) {
         const d1=new Date(r._gateIn); d1.setHours(0,0,0,0);
         const d2=new Date(r._gateOut); d2.setHours(0,0,0,0);
@@ -1908,7 +1942,7 @@ function renderCXOFCVol(D) {
   const leftPad = Math.min(Math.max(maxLabelLen*7.5,100),220);
   charts['cxo-fc-vol'] = new Chart(canvas.getContext('2d'), {
     type: 'bar',
-    data: { labels: fcs, datasets: [{ data: apptsByFC, backgroundColor: fcs.map(fc=>FC_COLORS[fc]+'cc'), borderRadius: 5 }] },
+    data: { labels: fcs, datasets: [{ data: unitsByFC, backgroundColor: fcs.map(fc=>FC_COLORS[fc]+'cc'), borderRadius: 5 }] },
     options: {
       indexAxis: 'y', responsive: true, maintainAspectRatio: false,
       animation: { duration: 400 }, layout: { padding: { left: 0, bottom: 0 } },
@@ -1921,13 +1955,13 @@ function renderCXOFCVol(D) {
             title: items => items[0].label,
             label: item => {
               const i = item.dataIndex;
-              return [`  ${apptsByFC[i]} appts`, `  ${fmtK(unitsByFC[i])} good units`];
+              return [`  ${fmtK(unitsByFC[i])} good units`, `  ${apptsByFC[i]} appts`];
             }
           }
         }
       },
       scales: {
-        x: { grid:{color:gc}, ticks:{color:tc,font:{size:10},maxRotation:0,callback:v=>v}, border:{color:gc} },
+        x: { grid:{color:gc}, ticks:{color:tc,font:{size:10},maxRotation:0,callback:v=>v>=1000?Math.round(v/1000)+'k':v}, border:{color:gc} },
         y: { grid:{display:false}, afterFit(axis){axis.width=leftPad;}, ticks:{color:tc,font:{size:10,weight:'600'}}, border:{color:gc} }
       }
     }
@@ -1936,14 +1970,48 @@ function renderCXOFCVol(D) {
 }
 
 function renderCXOClientVol(D) {
-  const byClient={};
-  D.forEach(r=>{const cl=r['Client']||'?'; byClient[cl]=(byClient[cl]||0)+1;});
-  const all=Object.entries(byClient).sort((a,b)=>b[1]-a[1]);
-  const top10=all.slice(0,10);
-  renderHBarsCJS('cxo-client-vol',top10.map(x=>normClient(x[0])),top10.map(x=>x[1]),top10.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'),{suffix:'',axisLabel:'Appointments'});
-  addExportBtn('cxo-client-vol', 'Top_Clients_Volume');
+  const byClient = {};
+  D.forEach(r => {
+    const cl = normClient(r['Client']||'?');
+    if (!byClient[cl]) byClient[cl] = {appts:0, units:0};
+    byClient[cl].appts++;
+    byClient[cl].units += (r._goodUnits||0);
+  });
+  const all = Object.entries(byClient).sort((a,b)=>b[1].appts-a[1].appts);
+  const top10 = all.slice(0,10);
+  const labels = top10.map(x=>x[0]);
+  const appts  = top10.map(x=>x[1].appts);
+  const units  = top10.map(x=>x[1].units);
+  destroyChart('cxo-client-vol');
+  const canvas = document.getElementById('cxo-client-vol');
+  if (!canvas) return;
+  const tc=textColor(), gc=gridColor();
+  const leftPad = Math.min(Math.max(...labels.map(l=>l.length))*7.5,220);
+  charts['cxo-client-vol'] = new Chart(canvas.getContext('2d'), {
+    type:'bar',
+    data:{labels,datasets:[{data:appts,backgroundColor:top10.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'),borderRadius:5}]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:{duration:400},
+      layout:{padding:{left:0,bottom:0}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:bgCard(),titleColor:tc,bodyColor:tc,
+          borderColor:isDarkMode()?'#252840':'#ccd0e8',borderWidth:1,
+          callbacks:{
+            title:items=>items[0].label,
+            label:item=>[`  ${appts[item.dataIndex].toLocaleString()} appts`,`  ${fmtK(units[item.dataIndex])} good units`]
+          }
+        }
+      },
+      scales:{
+        x:{grid:{color:gc},ticks:{color:tc,font:{size:10},maxRotation:0,callback:v=>v},border:{color:gc},title:{display:true,text:'Appointments',color:tc,font:{size:10}}},
+        y:{grid:{display:false},afterFit(axis){axis.width=leftPad;},ticks:{color:tc,font:{size:10,weight:'600'}},border:{color:gc}}
+      }
+    }
+  });
   addExportBtn('cxo-client-vol','Top_Clients_Volume');
-  buildInfoPanel('info-top-clients',all.map(x=>({name:normClient(x[0]),val:x[1]})),' appts');
+  buildInfoPanel('info-top-clients',all.map(x=>({name:x[0],val:x[1].appts})),' appts');
 }
 
 function renderCXODiscipline(D) {
@@ -1957,6 +2025,7 @@ function renderCXODiscipline(D) {
   });
   const allClients = Object.entries(clientCounts).sort((a,b)=>b[1].total-a[1].total);
   const top5 = allClients.slice(0,5).map(x=>x[0]);
+  const totals = top5.map(cl => clientCounts[cl]?.total || 0);
   const classes=['Advance','Immediate','Null','Immediate and Null'];
   const datasets=classes.map(cls=>{
     const bg={Advance:'rgba(20,184,166,.8)',Immediate:'rgba(249,115,22,.8)',Null:'rgba(239,68,68,.8)','Immediate and Null':'rgba(167,139,250,.8)'};
@@ -1980,7 +2049,10 @@ function renderCXODiscipline(D) {
       plugins:{
         legend:{display:true,position:'top',labels:{color:tc,font:{size:11},padding:12,boxWidth:12}},
         tooltip:{backgroundColor:bgCard(),titleColor:tc,bodyColor:tc,borderColor:gc,borderWidth:1,padding:10,
-          callbacks:{label:info=>` ${info.dataset.label}: ${info.raw}%`}}
+          callbacks:{
+            title:items=>`${items[0].label} · ${totals[items[0].dataIndex].toLocaleString()} appts`,
+            label:info=>` ${info.dataset.label}: ${info.raw}%`
+          }}
       },
       scales:{
         x:{stacked:true,grid:{display:false},ticks:{color:tc,font:{size:10},maxRotation:0,autoSkip:false},border:{color:gc}},
@@ -1994,7 +2066,7 @@ function renderCXODiscipline(D) {
       const cnt=entry.classes[cls]||0;
       return `${cls}: ${entry.total?(cnt/entry.total*100).toFixed(1):0}%`;
     }).join(', ');
-    return {name:cl, val:classes_pct, isText:true};
+    return {name:cl, val:classes_pct, isText:true, total:entry.total};
   });
   buildInfoPanelText('info-appt-class-client', infoPanelData);
 }
