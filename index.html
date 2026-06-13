@@ -370,7 +370,7 @@ select:hover,select:focus{border-color:var(--orange);}
 
 /* ══ TABLE ══ */
 .fc-table{width:100%;border-collapse:collapse;font-size:13px;}
-.fc-table th{padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-weight:600;border-bottom:2px solid #F3F4F6;white-space:nowrap;}
+.fc-table th{padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-weight:600;border-bottom:2px solid #F3F4F6;white-space:nowrap;position:sticky;top:0;background:var(--card-bg);z-index:2;}
 .fc-table td{padding:10px;border-bottom:1px solid #F9F9F9;color:var(--text1);font-weight:500;}
 .fc-table tr:last-child td{border-bottom:none;}.fc-table tr:hover td{background:#FAFAFA;}
 [data-theme="dark"] .fc-table th{border-bottom-color:#252840;}
@@ -665,6 +665,14 @@ select:hover,select:focus{border-color:var(--orange);}
 .load-pill { padding:2px 9px;border-radius:14px;border:1.5px solid var(--card-border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.01em;line-height:1.6;font-family:inherit; }
 .load-pill.active { background:var(--orange-tint);color:var(--accent);border-color:var(--accent); }
 .load-pill:hover:not(.active) { background:var(--orange-tint);border-color:var(--accent);color:var(--accent); }
+.load-pill-sm { padding:1.5px 8px;border-radius:12px;border:1.5px solid var(--card-border);background:transparent;color:var(--text3);font-size:9.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.01em;line-height:1.5;font-family:inherit;display:inline-flex;align-items:center;gap:3px; }
+.load-pill-sm.active { background:var(--orange-tint);color:var(--accent);border-color:var(--accent); }
+.load-pill-sm:hover:not(.active) { background:var(--orange-tint);border-color:var(--accent);color:var(--accent); }
+.load-select-sm { padding:1.5px 18px 1.5px 8px;border-radius:12px;border:1.5px solid var(--card-border);background:transparent;color:var(--text3);font-size:9.5px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.01em;line-height:1.5;font-family:inherit;appearance:none;-webkit-appearance:none;outline:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 6px center; max-width:110px; text-overflow:ellipsis; }
+.load-select-sm.active { background-color:var(--orange-tint);color:var(--accent);border-color:var(--accent); }
+.load-select-sm:hover { border-color:var(--accent);color:var(--accent); }
 </style>
 </head>
 <body>
@@ -897,7 +905,7 @@ select:hover,select:focus{border-color:var(--orange);}
         <div class="cc blue">
           <div class="cc-title" id="plan-load-title">📅 Upcoming Load — Next 14 Days by FC</div><div class="cc-export-btn" style="position:absolute;top:10px;right:14px;" onclick="exportTableData('upcoming','Upcoming_Load')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Excel</div>
           <div class="cc-sub" id="plan-load-sub" style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;"><span id="plan-load-sub-text">Appointments + Units scheduled per FC</span></div>
-          <table class="fc-table"><thead><tr><th style="text-align:center;">FC</th><th style="text-align:center;">Appts</th><th style="text-align:center;">Units</th><th style="text-align:center;">Avg U/Appt</th></tr></thead><tbody id="plan-load-tbody"></tbody></table>
+          <div id="plan-load-table-wrap"><table class="fc-table"><thead><tr><th style="text-align:center;">FC</th><th style="text-align:center;">Appts</th><th style="text-align:center;">Units</th><th style="text-align:center;">Avg U/Appt</th></tr></thead><tbody id="plan-load-tbody"></tbody></table></div>
         </div>
         <div class="cc red">
           <div class="cc-title">⚠️ Open Appointments — At Risk</div><div class="cc-export-btn" style="position:absolute;top:10px;right:14px;" onclick="exportTableData('open-risk','Open_Appointments_At_Risk')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Excel</div>
@@ -1439,10 +1447,16 @@ function exportTableData(type, title) {
   const cols=['FC','Client','Appt Type','Appt ID (External)','Scheduled Date',
     'Requisite Date','Notification Date','Units','Good Units','Status','Updated Status','Item Classification'];
   if(type==='upcoming'){
-    const _exportDays = window._planLoadDays || 14;
+    const _exportDays = 14; // Upcoming Load table is fixed to a 14-day horizon
     const tExport = new Date(today); tExport.setDate(tExport.getDate()+_exportDays);
-    rows=ALL_DATA.filter(r=>r._schedDate&&r._schedDate>=today&&r._schedDate<tExport)
-                 .sort((a,b)=>(a._schedDate||0)-(b._schedDate||0));  // sorted by scheduled date
+    rows=ALL_DATA.filter(r=>r._schedDate&&r._schedDate>=today&&r._schedDate<tExport);
+    // Respect global FC filter (top nav)
+    const fcSelExp = getSelectedMs('fc');
+    if (fcSelExp) rows = rows.filter(r=>fcSelExp.includes(r['FC']));
+    // Respect Upcoming Load card's local FC / Client slicers
+    if (window._planLoadFC) rows = rows.filter(r=>r['FC']===window._planLoadFC);
+    if (window._planLoadClient) rows = rows.filter(r=>normClient(r['Client'])===window._planLoadClient);
+    rows = rows.sort((a,b)=>(a._schedDate||0)-(b._schedDate||0));  // sorted by scheduled date
   } else if(type==='open-risk'){
     rows=ALL_DATA.filter(r=>{
       if(!r._schedDate||r._schedDate>=today) return false;
@@ -2141,31 +2155,32 @@ function renderCXOCategory(D) {
   renderCatChart();
 }
 
+// ── Upcoming Load card: Expand toggle + FC/Client slicers ──────────────────
+function togglePlanLoadExpand(){ window._planLoadExpanded = !window._planLoadExpanded; renderPlanner(); }
+function setPlanLoadFC(val){ window._planLoadFC = val||''; renderPlanner(); }
+function setPlanLoadClient(val){ window._planLoadClient = val||''; renderPlanner(); }
+
 function renderPlanner() {
   const D = FILTERED;
   const today = new Date(); today.setHours(0,0,0,0);
   const t7 = new Date(today); t7.setDate(t7.getDate()+7);
   const s = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
 
-  // ── Inject 7/14 day pills into Upcoming Load card once ────────────────────
-  if (!document.getElementById('plan-load-pills')) {
+  // ── Inject Expand + FC/Client slicer controls into Upcoming Load card once ──
+  if (!document.getElementById('plan-load-controls')) {
     const subEl = document.getElementById('plan-load-sub');
     if (subEl) {
-      const pills = document.createElement('div');
-      pills.id = 'plan-load-pills';
-      pills.style.cssText = 'display:inline-flex;gap:4px;';
-      pills.innerHTML = `
-        <button class="load-pill${(window._planLoadDays||14)===7?' active':''}" data-days="7"
-          onclick="window._planLoadDays=7;renderPlanner()">7 Days</button>
-        <button class="load-pill${(window._planLoadDays||14)===14?' active':''}" data-days="14"
-          onclick="window._planLoadDays=14;renderPlanner()">14 Days</button>`;
-      subEl.appendChild(pills);
+      const ctrl = document.createElement('div');
+      ctrl.id = 'plan-load-controls';
+      ctrl.style.cssText = 'display:inline-flex;gap:4px;align-items:center;';
+      ctrl.innerHTML = `
+        <button id="plan-load-expand-btn" class="load-pill-sm" onclick="togglePlanLoadExpand()">Expand <span style="font-size:8px;">▾</span></button>
+        <select id="plan-load-fc-sel" class="load-select-sm" onchange="setPlanLoadFC(this.value)"></select>
+        <select id="plan-load-cli-sel" class="load-select-sm" onchange="setPlanLoadClient(this.value)"></select>`;
+      subEl.appendChild(ctrl);
     }
   }
-  // Sync pills active state
-  const _ld = window._planLoadDays || 14;
-  document.querySelectorAll('#plan-load-pills .load-pill').forEach(b =>
-    b.classList.toggle('active', +b.dataset.days === _ld));
+  const _ld = 14; // Upcoming Load is fixed to a 14-day horizon
   // Update title text
   const titleEl2 = document.getElementById('plan-load-title');
   if (titleEl2) titleEl2.textContent = `📅 Upcoming Load — Next ${_ld} Days by FC`;
@@ -2231,22 +2246,113 @@ function renderPlanner() {
   s('plan-imm-rate', immRate);
   s('plan-imm-rate-sub', immCountPlan+' of '+D.length+' appts');
 
-  // Upcoming load TABLE — uses dynamic _planLoadDays (7 or 14)
+  // Upcoming load TABLE — fixed 14-day horizon, with local FC/Client slicers
+  // and an optional Expand view (FC > Client > Scheduled Date breakdown)
   const tEnd = new Date(today); tEnd.setDate(tEnd.getDate() + _ld);
   const upcomingTable = ALL_DATA.filter(r=>r._schedDate&&r._schedDate>=today&&r._schedDate<tEnd);
   const upcomingTableFC = fcSel ? upcomingTable.filter(r=>fcSel.includes(r['FC'])) : upcomingTable;
+
+  const FC_ORDER = ['BNG','CHE','GGN','HYD','KOL','MUM'];
+  const fcOptions = FC_ORDER.filter(fc=>upcomingTableFC.some(r=>r['FC']===fc));
+
+  // Apply local FC slicer
+  const localFC = window._planLoadFC || '';
+  const rowsAfterFC = localFC ? upcomingTableFC.filter(r=>r['FC']===localFC) : upcomingTableFC;
+
+  // Build client options from rows after FC filter
+  const cliOptions = [...new Set(rowsAfterFC.map(r=>r['Client']).filter(Boolean))]
+    .map(normClient).filter((v,i,a)=>a.indexOf(v)===i).sort();
+
+  // Reset local client filter if it's no longer valid for the current FC selection
+  if (window._planLoadClient && !cliOptions.includes(window._planLoadClient)) window._planLoadClient = '';
+  const localClient = window._planLoadClient || '';
+
+  // Apply local Client slicer
+  const loadRows = localClient ? rowsAfterFC.filter(r=>normClient(r['Client'])===localClient) : rowsAfterFC;
+
+  // ── Sync FC select options ──────────────────────────────────────────────
+  const fcSelEl = document.getElementById('plan-load-fc-sel');
+  if (fcSelEl) {
+    fcSelEl.innerHTML = '<option value="">All FCs</option>' +
+      fcOptions.map(fc=>`<option value="${fc}"${fc===localFC?' selected':''}>${fc}</option>`).join('');
+    fcSelEl.value = localFC;
+    fcSelEl.classList.toggle('active', !!localFC);
+  }
+  // ── Sync Client select options ──────────────────────────────────────────
+  const cliSelEl = document.getElementById('plan-load-cli-sel');
+  if (cliSelEl) {
+    cliSelEl.innerHTML = '<option value="">All Clients</option>' +
+      cliOptions.map(cl=>`<option value="${cl}"${cl===localClient?' selected':''}>${cl}</option>`).join('');
+    cliSelEl.value = localClient;
+    cliSelEl.classList.toggle('active', !!localClient);
+  }
+  // ── Sync Expand button label ─────────────────────────────────────────────
+  const expandBtn = document.getElementById('plan-load-expand-btn');
+  const isExpanded = !!window._planLoadExpanded;
+  if (expandBtn) {
+    expandBtn.innerHTML = isExpanded
+      ? 'Contract <span style="font-size:8px;">▴</span>'
+      : 'Expand <span style="font-size:8px;">▾</span>';
+    expandBtn.classList.toggle('active', isExpanded);
+  }
+  // ── Table wrap: make scrollable when expanded ───────────────────────────
+  const tableWrap = document.getElementById('plan-load-table-wrap');
+  if (tableWrap) {
+    tableWrap.style.maxHeight = isExpanded ? '420px' : '';
+    tableWrap.style.overflowY = isExpanded ? 'auto' : '';
+  }
+
   const tbody = document.getElementById('plan-load-tbody');
   if (tbody) {
-    const fcs = ['BNG','CHE','GGN','HYD','KOL','MUM'];
-    tbody.innerHTML = fcs.map(fc=>{
-      const rows = upcomingTableFC.filter(r=>r['FC']===fc);
-      if (!rows.length) return '';
-      const units = rows.reduce((a,r)=>a+r._units,0);
-      const avgUnits = rows.length ? Math.round(units/rows.length) : 0;
-      const col = FC_COLORS[fc]||'#888';
-      return `<tr><td style="text-align:center;"><span class="fc-dot" style="background:${col}"></span>${fc}</td><td style="text-align:center;">${rows.length}</td><td style="text-align:center;">${fmtK(units)}</td><td style="text-align:center;">${fmtK(avgUnits)}</td></tr>`;
-    }).join('');
-    if (!tbody.innerHTML) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:12px;">No upcoming appointments in next ${_ld} days</td></tr>`;
+    if (!isExpanded) {
+      // Flat per-FC summary (original view)
+      tbody.innerHTML = FC_ORDER.map(fc=>{
+        const rows = loadRows.filter(r=>r['FC']===fc);
+        if (!rows.length) return '';
+        const units = rows.reduce((a,r)=>a+r._units,0);
+        const avgUnits = rows.length ? Math.round(units/rows.length) : 0;
+        const col = FC_COLORS[fc]||'#888';
+        return `<tr><td style="text-align:center;"><span class="fc-dot" style="background:${col}"></span>${fc}</td><td style="text-align:center;">${rows.length}</td><td style="text-align:center;">${fmtK(units)}</td><td style="text-align:center;">${fmtK(avgUnits)}</td></tr>`;
+      }).join('');
+    } else {
+      // Expanded: FC > Client > Scheduled Date
+      tbody.innerHTML = FC_ORDER.map(fc=>{
+        const fcRows = loadRows.filter(r=>r['FC']===fc);
+        if (!fcRows.length) return '';
+        const col = FC_COLORS[fc]||'#888';
+        const fcUnits = fcRows.reduce((a,r)=>a+r._units,0);
+        const fcAvg = fcRows.length ? Math.round(fcUnits/fcRows.length) : 0;
+        let html = `<tr style="background:var(--orange-tint);"><td style="text-align:center;font-weight:700;"><span class="fc-dot" style="background:${col}"></span>${fc}</td><td style="text-align:center;font-weight:700;">${fcRows.length}</td><td style="text-align:center;font-weight:700;">${fmtK(fcUnits)}</td><td style="text-align:center;font-weight:700;">${fmtK(fcAvg)}</td></tr>`;
+
+        // Group by client
+        const byClient = {};
+        fcRows.forEach(r=>{
+          const cl = normClient(r['Client']||'?');
+          (byClient[cl] = byClient[cl] || []).push(r);
+        });
+        Object.keys(byClient).sort().forEach(cl=>{
+          const clRows = byClient[cl];
+          const clUnits = clRows.reduce((a,r)=>a+r._units,0);
+          const clAvg = clRows.length ? Math.round(clUnits/clRows.length) : 0;
+          html += `<tr><td style="text-align:left;padding-left:28px;font-weight:600;color:var(--text2);">${cl}</td><td style="text-align:center;font-weight:600;">${clRows.length}</td><td style="text-align:center;font-weight:600;">${fmtK(clUnits)}</td><td style="text-align:center;font-weight:600;">${fmtK(clAvg)}</td></tr>`;
+
+          // Group by scheduled date
+          const byDate = {};
+          clRows.forEach(r=>{
+            const dk = fmtDate(r._schedDate);
+            (byDate[dk] = byDate[dk] || []).push(r);
+          });
+          Object.keys(byDate).sort().forEach(dk=>{
+            const dRows = byDate[dk];
+            const dUnits = dRows.reduce((a,r)=>a+r._units,0);
+            const dAvg = dRows.length ? Math.round(dUnits/dRows.length) : 0;
+            html += `<tr><td style="text-align:left;padding-left:48px;font-size:.7rem;color:var(--text3);">${dk}</td><td style="text-align:center;font-size:.7rem;color:var(--text3);">${dRows.length}</td><td style="text-align:center;font-size:.7rem;color:var(--text3);">${fmtK(dUnits)}</td><td style="text-align:center;font-size:.7rem;color:var(--text3);">${fmtK(dAvg)}</td></tr>`;
+          });
+        });
+        return html;
+      }).join('');
+    }
+    if (!tbody.innerHTML) tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:12px;">No upcoming appointments in next ${_ld} days</td></tr>`;
   }
 
   // Open appointments list
