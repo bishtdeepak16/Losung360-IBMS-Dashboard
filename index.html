@@ -856,7 +856,7 @@ select:hover,select:focus{border-color:var(--orange);}
         <div class="cc teal"><div class="cc-row"><div><div class="cc-title">🏭 Volume by FC (Good Units)</div><div class="cc-sub">Good Units per Fulfilment Centre</div></div></div><div class="rh-sm"><canvas id="cxo-fc-vol"></canvas></div></div>
       </div>
       <div class="two-col">
-        <div class="cc blue"><div class="cc-row"><div><div class="cc-title">👥 Top Clients by Volume</div><div class="cc-sub">Total Appointments — top 10</div><div class="cc-info-btn" id="info-top-clients" title="All Clients Info">ℹ</div></div></div><div class="rh-lg"><canvas id="cxo-client-vol"></canvas></div></div>
+        <div class="cc blue"><div class="cc-row"><div><div class="cc-title">👥 Top Clients by Volume (Good Units)</div><div class="cc-sub">Total Appointments — top 10</div><div class="cc-info-btn" id="info-top-clients" title="All Clients Info">ℹ</div></div></div><div class="rh-lg"><canvas id="cxo-client-vol"></canvas></div></div>
         <div class="cc red"><div class="cc-row"><div><div class="cc-title">🎯 Appt Classification by Client</div><div class="cc-info-btn" id="info-appt-class-client" title="All Clients Info">ℹ</div><div class="cc-sub">Advance · Immediate · Null · Imm+Null % — Top 5 by volume</div></div></div><div class="rh"><canvas id="cxo-discipline-fc"></canvas></div></div>
       </div>
       <div class="two-col">
@@ -1239,16 +1239,16 @@ function _openApptClassModal(data) {
 
   // ── Parse data into structured objects ──────────────────
   const clients = data.map(d => {
-    const c = {name:d.name, advance:0, immediate:0, null:0, immNull:0, total:d.total||0};
+    const c = {name:d.name, advance:0, immediate:0, null:0, immNull:0, total:d.total||0,
+               advanceCount:0, immediateCount:0, nullCount:0, immNullCount:0};
     d.val.split(', ').forEach(p => {
-      const idx = p.indexOf(': ');
-      if (idx < 0) return;
-      const k = p.substring(0,idx).trim();
-      const v = parseFloat(p.substring(idx+2)) || 0;
-      if (k==='Advance')            c.advance   = v;
-      else if (k==='Immediate')     c.immediate = v;
-      else if (k==='Null')          c.null      = v;
-      else if (k==='Immediate and Null') c.immNull = v;
+      const m = p.match(/^(.+):\s*([\d.]+)%\s*\((\d+)\)$/);
+      if (!m) return;
+      const k = m[1].trim(), pct = parseFloat(m[2])||0, cnt = parseInt(m[3])||0;
+      if (k==='Advance')            { c.advance   = pct; c.advanceCount   = cnt; }
+      else if (k==='Immediate')     { c.immediate = pct; c.immediateCount = cnt; }
+      else if (k==='Null')          { c.null      = pct; c.nullCount      = cnt; }
+      else if (k==='Immediate and Null') { c.immNull = pct; c.immNullCount = cnt; }
     });
     return c;
   });
@@ -1293,12 +1293,14 @@ function _openApptClassModal(data) {
             backgroundColor: bgCard(), titleColor: tc, bodyColor: tc,
             borderColor: isDarkMode()?'#252840':'#ccd0e8', borderWidth:1, padding:10,
             callbacks: {
-              title: items => {
+              title: items => items[0].label,
+              label: item => {
                 const sorted = getSorted();
-                const tot = sorted[items[0].dataIndex]?.total || 0;
-                return `${items[0].label}${tot?' · '+tot.toLocaleString()+' appts':''}`;
-              },
-              label: item => ` ${item.dataset.label}: ${item.raw.toFixed(1)}%`
+                const c = sorted[item.dataIndex];
+                const countMap = {Advance:c.advanceCount, Immediate:c.immediateCount, Null:c.nullCount, 'Immediate & Null':c.immNullCount};
+                const cnt = countMap[item.dataset.label] || 0;
+                return ` ${item.dataset.label}: ${item.raw.toFixed(1)}% (${cnt.toLocaleString()} APPTS)`;
+              }
             }
           }
         },
@@ -1764,6 +1766,7 @@ const _TREND_METRICS = [
   {id:'advance_pct', label:'Advance %',        sub:'Monthly advance appointment mix',                 color:'#3b82f6'},
   {id:'tat',         label:'Median TAT (hr)',  sub:'Monthly median gate-to-gate TAT',                 color:'#06b6d4'},
   {id:'imm_pct',     label:'Immediate %',      sub:'Monthly immediate appointment mix',               color:'#ec4899'},
+  {id:'detention',   label:'Detention Rate %', sub:'Monthly detention rate — not cleared same day',   color:'#dc2626'},
 ];
 window._cxoTrendMetric = window._cxoTrendMetric || 'volume';
 
@@ -1796,7 +1799,7 @@ function renderCXOTrend(D) {
   D.forEach(r => {
     if (!r._schedDate) return;
     const k = r._schedDate.getFullYear()+'-'+String(r._schedDate.getMonth()+1).padStart(2,'0');
-    if (!byMonth[k]) byMonth[k] = {appts:0,units:0,gateIn:0,matchDate:0,nullCount:0,sameDay:0,dsUnits:0,totalUnits:0,advCount:0,immCount:0,tatArr:[],advTotal:0};
+    if (!byMonth[k]) byMonth[k] = {appts:0,units:0,gateIn:0,matchDate:0,nullCount:0,sameDay:0,dsUnits:0,totalUnits:0,advCount:0,immCount:0,tatArr:[],advTotal:0,completed:0,detained:0};
     const b = byMonth[k];
     b.appts++;
     b.units       += (r._goodUnits||0);
@@ -1814,7 +1817,9 @@ function renderCXOTrend(D) {
       if (r._gateOut) {
         const d1=new Date(r._gateIn); d1.setHours(0,0,0,0);
         const d2=new Date(r._gateOut); d2.setHours(0,0,0,0);
+        b.completed++;
         if (d1.getTime()===d2.getTime()) b.sameDay++;
+        else b.detained++;
       }
     }
     if (r._tatHrs>0) b.tatArr.push(r._tatHrs);
@@ -1846,6 +1851,7 @@ function renderCXOTrend(D) {
         case 'advance_pct':  return b.appts     ? +((b.advCount/b.appts)*100).toFixed(1)      : null;
         case 'tat':          return b.tatArr.length ? +median(b.tatArr).toFixed(1)            : null;
         case 'imm_pct':      return b.appts     ? +((b.immCount/b.appts)*100).toFixed(1)      : null;
+        case 'detention':    return b.completed ? +((b.detained/b.completed)*100).toFixed(1)  : null;
         default: return null;
       }
     });
@@ -1960,7 +1966,7 @@ function renderCXOFCVol(D) {
             title: items => items[0].label,
             label: item => {
               const i = item.dataIndex;
-              return [`  ${fmtK(unitsByFC[i])} good units`, `  ${apptsByFC[i]} appts`];
+              return [`  ${unitsByFC[i].toLocaleString()} units`, `  ${apptsByFC[i].toLocaleString()} APPTS`];
             }
           }
         }
@@ -2005,7 +2011,7 @@ function renderCXOClientVol(D) {
           borderColor:isDarkMode()?'#252840':'#ccd0e8',borderWidth:1,
           callbacks:{
             title:items=>items[0].label,
-            label:item=>[`  ${appts[item.dataIndex].toLocaleString()} appts`,`  ${fmtK(units[item.dataIndex])} good units`]
+            label:item=>[`  ${appts[item.dataIndex].toLocaleString()} APPTS`,`  ${units[item.dataIndex].toLocaleString()} units`]
           }
         }
       },
@@ -2059,7 +2065,7 @@ function renderCXODiscipline(D) {
               const cl=top5[items[0].dataIndex];
               const cls=classes[items[0].datasetIndex];
               const cnt=clientCounts[cl]?.classes?.[cls]||0;
-              return `${items[0].label} · ${cls}: ${cnt.toLocaleString()} appts`;
+              return `${items[0].label} · ${cls}: ${cnt.toLocaleString()} APPTS`;
             },
             label:info=>` ${info.dataset.label}: ${info.raw}%`
           }}
@@ -2092,9 +2098,10 @@ function renderCXODSByFC(D) {
     clientDs[cl].ds+=r._damagedUnits+r._shortUnits;
   });
   const all=Object.entries(clientDs).filter(([,v])=>v.units>=500)
-    .map(([k,v])=>([k,+(v.ds/v.units*100).toFixed(2)])).sort((a,b)=>b[1]-a[1]);
+    .map(([k,v])=>([k,+(v.ds/v.units*100).toFixed(2),v.ds,v.units])).sort((a,b)=>b[1]-a[1]);
   const top7=all.slice(0,7);
-  renderHBarsCJS('cxo-ds-fc',top7.map(x=>normClient(x[0])),top7.map(x=>x[1]),top7.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'),{suffix:'%'});
+  const extra=top7.map(x=>`${Math.round(x[2]).toLocaleString()} / ${Math.round(x[3]).toLocaleString()} units`);
+  renderHBarsCJS('cxo-ds-fc',top7.map(x=>normClient(x[0])),top7.map(x=>x[1]),top7.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'),{suffix:'%',extra});
   addExportBtn('cxo-ds-fc', 'DS_Rate_by_Client');
   addExportBtn('cxo-ds-fc','DS_Rate_by_Client');
   buildInfoPanel('info-ds-client',all.map(x=>({name:normClient(x[0]),val:x[1]})),'%');
@@ -3457,7 +3464,11 @@ function renderHBarsCJS(canvasId, labels, values, colors, opts={}) {
         tooltip: {
           backgroundColor: bgCard(), titleColor: tc, bodyColor: tc,
           borderColor: isDarkMode() ? '#252840' : '#ccd0e8', borderWidth: 1,
-          callbacks: { label: info => ` ${opts.suffix ? info.raw + opts.suffix : info.raw}${opts.axisLabel ? ' '+opts.axisLabel : ''}` }
+          callbacks: { label: info => {
+            const main = ` ${opts.suffix ? info.raw + opts.suffix : info.raw}${opts.axisLabel ? ' '+opts.axisLabel : ''}`;
+            if (opts.extra && opts.extra[info.dataIndex]!=null) return [main, ` ${opts.extra[info.dataIndex]}`];
+            return main;
+          } }
         }
       },
       scales: {
