@@ -665,14 +665,17 @@ select:hover,select:focus{border-color:var(--orange);}
 .load-pill { padding:2px 9px;border-radius:14px;border:1.5px solid var(--card-border);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.01em;line-height:1.6;font-family:inherit; }
 .load-pill.active { background:var(--orange-tint);color:var(--accent);border-color:var(--accent); }
 .load-pill:hover:not(.active) { background:var(--orange-tint);border-color:var(--accent);color:var(--accent); }
-.load-pill-sm { padding:1.5px 8px;border-radius:12px;border:1.5px solid var(--card-border);background:transparent;color:var(--text3);font-size:9.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.01em;line-height:1.5;font-family:inherit;display:inline-flex;align-items:center;gap:3px; }
-.load-pill-sm.active { background:var(--orange-tint);color:var(--accent);border-color:var(--accent); }
-.load-pill-sm:hover:not(.active) { background:var(--orange-tint);border-color:var(--accent);color:var(--accent); }
-.load-select-sm { padding:1.5px 18px 1.5px 8px;border-radius:12px;border:1.5px solid var(--card-border);background:transparent;color:var(--text3);font-size:9.5px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.01em;line-height:1.5;font-family:inherit;appearance:none;-webkit-appearance:none;outline:none;
+.load-pill-sm { padding:3px 10px;border-radius:12px;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text2);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s ease;white-space:nowrap;letter-spacing:.02em;line-height:1.5;font-family:inherit;display:inline-flex;align-items:center;gap:4px;box-shadow:0 1px 2px rgba(0,0,0,.04); }
+.load-pill-sm svg{transition:transform .15s ease;}
+.load-pill-sm.active svg{transform:rotate(180deg);}
+.load-pill-sm.active { background:linear-gradient(135deg,rgba(249,115,22,.14),rgba(249,115,22,.07));color:var(--accent);border-color:var(--accent);box-shadow:0 2px 6px rgba(249,115,22,.18); }
+.load-pill-sm:hover:not(.active) { background:var(--orange-tint);border-color:var(--accent);color:var(--accent);transform:translateY(-1px);box-shadow:0 2px 5px rgba(249,115,22,.12); }
+.load-select-sm { padding:3px 20px 3px 10px;border-radius:12px;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text2);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s ease;letter-spacing:.02em;line-height:1.5;font-family:inherit;appearance:none;-webkit-appearance:none;outline:none;box-shadow:0 1px 2px rgba(0,0,0,.04);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 6px center; max-width:110px; text-overflow:ellipsis; }
-.load-select-sm.active { background-color:var(--orange-tint);color:var(--accent);border-color:var(--accent); }
-.load-select-sm:hover { border-color:var(--accent);color:var(--accent); }
+  background-repeat:no-repeat;background-position:right 7px center; max-width:108px; text-overflow:ellipsis; }
+.load-select-sm.active { background-color:rgba(249,115,22,.1);color:var(--accent);border-color:var(--accent);box-shadow:0 2px 6px rgba(249,115,22,.18);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23f97316' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); }
+.load-select-sm:hover { border-color:var(--accent);color:var(--accent);transform:translateY(-1px);box-shadow:0 2px 5px rgba(249,115,22,.12); }
 </style>
 </head>
 <body>
@@ -904,7 +907,7 @@ select:hover,select:focus{border-color:var(--orange);}
       <div class="two-col">
         <div class="cc blue">
           <div class="cc-title" id="plan-load-title">📅 Upcoming Load — Next 14 Days by FC</div><div class="cc-export-btn" style="position:absolute;top:10px;right:14px;" onclick="exportTableData('upcoming','Upcoming_Load')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Excel</div>
-          <div class="cc-sub" id="plan-load-sub" style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;"><span id="plan-load-sub-text">Appointments + Units scheduled per FC</span></div>
+          <div class="cc-sub" id="plan-load-sub" style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:nowrap;"><span id="plan-load-sub-text" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Appointments + Units scheduled per FC</span></div>
           <div id="plan-load-table-wrap"><table class="fc-table"><thead><tr><th style="text-align:center;">FC</th><th style="text-align:center;">Appts</th><th style="text-align:center;">Units</th><th style="text-align:center;">Avg U/Appt</th></tr></thead><tbody id="plan-load-tbody"></tbody></table></div>
         </div>
         <div class="cc red">
@@ -2147,7 +2150,7 @@ function renderCatChart(){
     const lbl=k.length>14?k.slice(0,13)+'…':k;
     return lbl+' ('+pct+'%)';
   });
-  renderDoughnutCJS('cxo-category',labels,sorted.map(x=>x[1][key]),sorted.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]),{legendPos:'right',smallLegend:true});
+  renderDoughnutCJS('cxo-category',labels,sorted.map(x=>x[1][key]),sorted.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]),{legendPos:'right',smallLegend:true,unitLabel:_catMode==='appts'?'APPTS':'units'});
   addExportBtn('cxo-category', 'Volume_Item_Category');
 }
 function renderCXOCategory(D) {
@@ -2172,9 +2175,9 @@ function renderPlanner() {
     if (subEl) {
       const ctrl = document.createElement('div');
       ctrl.id = 'plan-load-controls';
-      ctrl.style.cssText = 'display:inline-flex;gap:4px;align-items:center;';
+      ctrl.style.cssText = 'display:inline-flex;gap:5px;align-items:center;flex-shrink:0;';
       ctrl.innerHTML = `
-        <button id="plan-load-expand-btn" class="load-pill-sm" onclick="togglePlanLoadExpand()">Expand <span style="font-size:8px;">▾</span></button>
+        <button id="plan-load-expand-btn" class="load-pill-sm" onclick="togglePlanLoadExpand()">Expand <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></button>
         <select id="plan-load-fc-sel" class="load-select-sm" onchange="setPlanLoadFC(this.value)"></select>
         <select id="plan-load-cli-sel" class="load-select-sm" onchange="setPlanLoadClient(this.value)"></select>`;
       subEl.appendChild(ctrl);
@@ -2249,7 +2252,13 @@ function renderPlanner() {
   // Upcoming load TABLE — fixed 14-day horizon, with local FC/Client slicers
   // and an optional Expand view (FC > Client > Scheduled Date breakdown)
   const tEnd = new Date(today); tEnd.setDate(tEnd.getDate() + _ld);
-  const upcomingTable = ALL_DATA.filter(r=>r._schedDate&&r._schedDate>=today&&r._schedDate<tEnd);
+  const upcomingTable = ALL_DATA.filter(r=>{
+    if (!r._schedDate||r._schedDate<today||r._schedDate>=tEnd) return false;
+    // Exclude today's appts that are already fulfilled (gated out) —
+    // they're no longer "upcoming load".
+    if (r._schedDate.getTime()===today.getTime() && r._gateOut) return false;
+    return true;
+  });
   const upcomingTableFC = fcSel ? upcomingTable.filter(r=>fcSel.includes(r['FC'])) : upcomingTable;
 
   const FC_ORDER = ['BNG','CHE','GGN','HYD','KOL','MUM'];
@@ -2291,8 +2300,8 @@ function renderPlanner() {
   const isExpanded = !!window._planLoadExpanded;
   if (expandBtn) {
     expandBtn.innerHTML = isExpanded
-      ? 'Contract <span style="font-size:8px;">▴</span>'
-      : 'Expand <span style="font-size:8px;">▾</span>';
+      ? 'Contract <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>'
+      : 'Expand <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>';
     expandBtn.classList.toggle('active', isExpanded);
   }
   // ── Table wrap: make scrollable when expanded ───────────────────────────
@@ -2410,7 +2419,7 @@ function renderPlannerCategoryChart(D) {
     const lbl=k.length>14?k.slice(0,13)+'…':k;
     return lbl+'  ('+pct+'%)';
   });
-  renderDoughnutCJS('plan-category-chart',labels,sorted.map(x=>x[1]),sorted.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]),{legendPos:'right',smallLegend:true});
+  renderDoughnutCJS('plan-category-chart',labels,sorted.map(x=>x[1]),sorted.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]),{legendPos:'right',smallLegend:true,unitLabel:'APPTS'});
   addExportBtn('plan-category-chart','Category_Mix_7d');
 }
 
@@ -3536,7 +3545,7 @@ function renderDoughnutCJS(canvasId, labels, values, colors, opts={}) {
           borderWidth: 1,
           callbacks: {
             title: items => items.length ? items[0].label : '',
-            label: info => ` ${info.raw.toLocaleString('en-IN')} units (${(info.raw/total*100).toFixed(1)}%)`
+            label: info => ` ${info.raw.toLocaleString('en-IN')} ${opts.unitLabel || 'units'} (${(info.raw/total*100).toFixed(1)}%)`
           }
         }
       }
