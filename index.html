@@ -1143,11 +1143,22 @@ function enrichRow(row){
   row['FC']=(row['FC']||'').trim();
   row._schedDate=parseSchedDate(row['Scheduled Date'], row['Requisite Date']);
   row._notifDate=parseDate(row['Notification Date']);
-  row._gateIn=parseDT(row['Gate In Time']);
-  row._gateOut=parseDT(row['Gate Out Time']);
-  row._onDock=parseDT(row['On Dock Time']);
-  row._unloadStart=parseDT(row['Unloading Start Time']);
-  row._unloadEnd=parseDT(row['Unloading End Time']);
+  const fallbackYear = row._schedDate ? row._schedDate.getFullYear() : null;
+  // Requisite Date is the confirmed source-of-truth for date ordering in
+  // this sheet. When a Gate-In/Out timestamp's day/month pair is itself
+  // ambiguous (both parts ≤12), use the Requisite Date's month as a hint
+  // for which part is the month.
+  let reqHintMonth = null;
+  if (row['Requisite Date']) {
+    const rm = String(row['Requisite Date']).match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+    if (rm) reqHintMonth = +rm[1]; // Requisite Date is MM-DD-YYYY
+  }
+  row._gateIn=parseDT(row['Gate In Time'], fallbackYear, reqHintMonth);
+  row._gateOut=parseDT(row['Gate Out Time'], fallbackYear, reqHintMonth);
+  row._onDock=parseDT(row['On Dock Time'], fallbackYear, reqHintMonth);
+  row._unloadStart=parseDT(row['Unloading Start Time'], fallbackYear, reqHintMonth);
+  row._unloadEnd=parseDT(row['Unloading End Time'], fallbackYear, reqHintMonth);
+  reconcileGateTimes(row);
   row._gateInHour=row._gateIn?row._gateIn.getHours():null;
   row._gateOutHour=row._gateOut?row._gateOut.getHours():null;
   row._updatedStatus=deriveStatus(row);
@@ -1196,7 +1207,125 @@ function parseSchedDate(schedStr, reqStr) {
   // Default: treat as mm-dd-yyyy (same as parseDate)
   return new Date(yr, s1-1, s2);
 }
-function parseDT(s){if(!s)return null;try{const d=new Date(s);return isNaN(d)?null:d;}catch(e){return null;}}
+// ── Robust timestamp parser for Gate In/Out, On Dock, Unload Start/End ──────
+// Handles the messy real-world formats seen in the source sheet:
+//   "01-13-2026 10:00 AM"   MM-DD-YYYY, 12-hour with AM/PM
+//   "02-02-2026 13:35"      MM-DD-YYYY (or DD-MM), 24-hour, no AM/PM
+//   "06-11-2026 10:45"      24-hour, no AM/PM
+//   "01-10-0206 9:35 AM"    typo'd year (0206 → 2026)
+//   "12-16-2026 4:20 PM"    plausible-looking but out-of-range month for the
+//                            surrounding data (corrected in the sanity pass)
+function parseDT(s, fallbackYear, reqHintMonth) {
+  if (!s) return null;
+  s = String(s).trim();
+  if (!s) return null;
+
+  // Match "M-D-Y H:MM[:SS] [AM/PM]" — separators can be - / .
+  const m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?$/);
+  if (!m) {
+    // Fallback to native parser for anything else (e.g. ISO strings)
+    const d = new Date(s);
+    return isNaN(d) ? null : d;
+  }
+
+  let [, p1, p2, yr, hh, mm, ss, ampm] = m;
+  p1 = +p1; p2 = +p2; hh = +hh; mm = +mm; ss = ss ? +ss : 0; yr = +yr;
+
+  // Fix obviously-truncated/typo'd years (e.g. "0206" instead of "2026").
+  // Any 4-digit year before 2020 in this dataset is corrupted — the
+  // operation only runs in the 2020s, so reinterpret it as 20xx using the
+  // last two digits, but if THAT also looks wrong (<20), fall back to the
+  // row's own Scheduled Date year (passed in as fallbackYear).
+  if (yr < 100) {
+    yr += 2000;
+  } else if (yr < 2020) {
+    const last2 = yr % 100;
+    yr = last2 >= 20 ? 2000 + last2 : (fallbackYear || 2000 + last2);
+  }
+
+  // Convert 12-hour to 24-hour if AM/PM present
+  if (ampm) {
+    const isPM = ampm.toLowerCase() === 'pm';
+    if (isPM && hh < 12) hh += 12;
+    if (!isPM && hh === 12) hh = 0;
+  }
+
+  // Determine month/day ordering: default MM-DD-YYYY (matches rest of sheet,
+  // confirmed by Requisite Date as source of truth).
+  // If p1 > 12, it can't be a month → it must be DD-MM-YYYY, so swap.
+  let month, day;
+  if (p1 > 12 && p2 <= 12) {
+    month = p2; day = p1;          // DD-MM-YYYY → swap to MM/DD
+  } else if (p1 <= 12 && p2 <= 12 && p1 !== p2 && reqHintMonth) {
+    // Genuinely ambiguous (both parts could be month or day). Use the
+    // Requisite Date's month as a tie-breaker: whichever part matches the
+    // Requisite month is treated as the month here too.
+    if (p2 === reqHintMonth && p1 !== reqHintMonth) { month = p2; day = p1; }
+    else { month = p1; day = p2; } // default MM-DD-YYYY
+  } else {
+    month = p1; day = p2;          // MM-DD-YYYY (default)
+  }
+  // Clamp month into valid range as a last resort against stray typos
+  // (e.g. month=12 when every neighbouring record that month is "03")
+  // — handled by the cross-row sanity pass below, not here.
+  if (month < 1) month = 1;
+  if (month > 12) month = ((month - 1) % 12) + 1;
+  if (day < 1) day = 1;
+  if (day > 31) day = 31;
+
+  const d = new Date(yr, month - 1, day, hh, mm, ss);
+  return isNaN(d) ? null : d;
+}
+
+// ── Cross-field sanity pass ──────────────────────────────────────────────
+// Gate Out (and similarly On Dock / Unload Start / Unload End) must be >=
+// Gate In and within a sane window (we allow up to ~45 days detention).
+// If the naive parse violates this, try alternate interpretations of the
+// SECOND date (month/day swap, or a plausible year/month typo) and pick
+// whichever produces the smallest non-negative gap from Gate In.
+function reconcileGateTimes(row) {
+  const gin = row._gateIn;
+  if (!gin) return;
+
+  const MAX_DETENTION_MS = 45 * 86400000; // 45 days
+
+  const fixAgainst = (dt, fieldRaw) => {
+    if (!dt) return dt;
+    const diff = dt - gin;
+    if (diff >= -3600000 && diff <= MAX_DETENTION_MS) return dt; // within ±1h to 45d — fine
+
+    // Try alternate parses of the raw string and keep the most plausible one
+    const candidates = [];
+    const m = String(fieldRaw||'').trim().match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?$/);
+    if (m) {
+      let [, p1, p2, yr, hh, mm, ss, ampm] = m;
+      p1=+p1; p2=+p2; hh=+hh; mm=+mm; ss=ss?+ss:0; yr=+yr;
+      if (yr < 100) yr += 2000; else if (yr < 2000) yr = 2000 + (yr % 100);
+      if (ampm) { const isPM=ampm.toLowerCase()==='pm'; if(isPM&&hh<12)hh+=12; if(!isPM&&hh===12)hh=0; }
+
+      // Candidate A: swap month/day from the original interpretation
+      if (p2 >= 1 && p2 <= 12 && p1 >= 1 && p1 <= 31) candidates.push(new Date(yr, p2-1, p1, hh, mm, ss));
+      // Candidate B: same day/month as Gate In's month (typo'd month — keep day)
+      candidates.push(new Date(gin.getFullYear(), gin.getMonth(), p2 <= 31 ? p2 : p1, hh, mm, ss));
+      candidates.push(new Date(gin.getFullYear(), gin.getMonth(), p1 <= 31 ? p1 : p2, hh, mm, ss));
+      // Candidate C: original value but corrected to Gate In's year
+      candidates.push(new Date(gin.getFullYear(), dt.getMonth(), dt.getDate(), hh, mm, ss));
+    }
+
+    let best = null, bestDiff = Infinity;
+    for (const c of candidates) {
+      if (isNaN(c)) continue;
+      const cd = c - gin;
+      if (cd >= -3600000 && cd <= MAX_DETENTION_MS && cd < bestDiff) { best = c; bestDiff = cd; }
+    }
+    return best || dt; // if nothing plausible, keep original (don't fabricate)
+  };
+
+  row._gateOut    = fixAgainst(row._gateOut,    row['Gate Out Time']);
+  row._onDock     = fixAgainst(row._onDock,     row['On Dock Time']);
+  row._unloadStart= fixAgainst(row._unloadStart,row['Unloading Start Time']);
+  row._unloadEnd  = fixAgainst(row._unloadEnd,  row['Unloading End Time']);
+}
 function fmtDate(d){return d?d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'):'—';}
 function fmtK(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(Math.round(n));}
 function median(arr){if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;}
