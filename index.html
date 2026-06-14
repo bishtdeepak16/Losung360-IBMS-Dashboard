@@ -855,7 +855,7 @@ select:hover,select:focus{border-color:var(--orange);}
         <div class="kc green"><div class="kc-icon-box">✅</div><div class="kc-body"><div class="kc-lbl">Appt Fulfilment %</div><div class="kc-val" id="cxo-fulfil">—</div><div class="kc-sub" id="cxo-fulfil-sub">Gate-Ins / Scheduled</div></div></div>
         <div class="kc orange"><div class="kc-icon-box">📅</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Scheduled Date Adherence</div><div class="kc-val" id="cxo-adherence">—</div><div class="kc-sub">Advance appts · came on committed day</div></div></div>
         <div class="kc lime"><div class="kc-icon-box">🎯</div><div class="kc-body"><div class="kc-lbl">Same-Day Clearance %</div><div class="kc-val" id="cxo-sameday">—</div><div class="kc-sub" id="cxo-sameday-sub">Gate-Out = Gate-In date</div></div></div>
-        <div class="kc amber"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="30" r="17" fill="#fde68a" stroke="#d97706" stroke-width="2.5"/><circle cx="26" cy="30" r="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/><path d="M26 20v10l6 4" stroke="#b45309" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="16" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><rect x="31" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><path d="M14 10h24" stroke="#d97706" stroke-width="2" stroke-linecap="round"/></svg></div><div class="kc-body" style="padding-top:0;"><div class="kc-lbl">Detention Rate</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1px 6px;margin:4px 0 2px;"><div><span style="font-size:8.5px;font-weight:600;color:var(--text3);">D1 </span><span id="cxo-det-d1" style="font-size:15px;font-weight:800;color:#d97706;letter-spacing:-.02em;">—</span></div><div><span style="font-size:8.5px;font-weight:600;color:var(--text3);">D2 </span><span id="cxo-det-d2" style="font-size:15px;font-weight:800;color:#ea580c;letter-spacing:-.02em;">—</span></div><div><span style="font-size:8.5px;font-weight:600;color:var(--text3);">D3 </span><span id="cxo-det-d3" style="font-size:15px;font-weight:800;color:#dc2626;letter-spacing:-.02em;">—</span></div><div><span style="font-size:8px;font-weight:600;color:var(--text3);">D3+ </span><span id="cxo-det-d3p" style="font-size:14px;font-weight:800;color:#7c3aed;letter-spacing:-.02em;">—</span></div></div></div></div>
+        <div class="kc amber" style="padding-bottom:28px;"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="30" r="17" fill="#fde68a" stroke="#d97706" stroke-width="2.5"/><circle cx="26" cy="30" r="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/><path d="M26 20v10l6 4" stroke="#b45309" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="16" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><rect x="31" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><path d="M14 10h24" stroke="#d97706" stroke-width="2" stroke-linecap="round"/></svg></div><div class="kc-body" style="padding-top:0;"><div class="kc-lbl">Detention Rate</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1px 6px;margin:4px 0 2px;"><div><span style="font-size:8.5px;font-weight:600;color:var(--text3);">D1 </span><span id="cxo-det-d1" style="font-size:15px;font-weight:800;color:#d97706;letter-spacing:-.02em;">—</span></div><div><span style="font-size:8.5px;font-weight:600;color:var(--text3);">D2 </span><span id="cxo-det-d2" style="font-size:15px;font-weight:800;color:#ea580c;letter-spacing:-.02em;">—</span></div><div><span style="font-size:8.5px;font-weight:600;color:var(--text3);">D3 </span><span id="cxo-det-d3" style="font-size:15px;font-weight:800;color:#dc2626;letter-spacing:-.02em;">—</span></div><div><span style="font-size:8px;font-weight:600;color:var(--text3);">D3+ </span><span id="cxo-det-d3p" style="font-size:14px;font-weight:800;color:#7c3aed;letter-spacing:-.02em;">—</span></div></div></div><button class="ops-dl-btn" onclick="exportDetentionKPI()" title="Download detained appointments CSV" style="font-size:7.2px;padding:2.4px 7.2px;bottom:8px;right:10px;">⬇ Export</button></div>
         <div class="kc red"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="6" y="38" width="40" height="6" rx="1.5" fill="#b91c1c" opacity=".5"/><rect x="10" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="36" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="10" y="12" width="32" height="22" rx="2.5" fill="#fca5a5"/><rect x="10" y="12" width="32" height="22" rx="2.5" stroke="#b91c1c" stroke-width="2.5"/><path d="M22 12l-6 12 8-5-8 21" stroke="#b91c1c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 7l6 5M43 7l-6 5" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Damage + Shortage %</div><div class="kc-val" id="cxo-dsrate">—</div><div class="kc-sub">vs Units as per Docs</div></div><button class="ops-dl-btn" onclick="exportDSKPI()" title="Download D+S appointments CSV" style="font-size:8px;padding:2px 7px;bottom:8px;right:10px;">⬇ Export</button></div>
         <div class="kc amber"><div class="kc-icon-box">⏱</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Median Gate-to-Gate TAT</div><div class="kc-val" id="cxo-tat">—</div><div class="kc-sub">Hours (completed only)</div></div></div>
         <div class="kc pink"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="2" y="22" width="30" height="18" rx="2.5" fill="#f9a8d4" stroke="#be185d" stroke-width="2"/><rect x="2" y="22" width="10" height="18" rx="2.5" fill="#db2777" opacity=".7"/><path d="M32 28h6l5 7H32" stroke="#be185d" stroke-width="2" stroke-linejoin="round" fill="#f9a8d4"/><circle cx="11" cy="42" r="5.5" fill="#be185d"/><circle cx="11" cy="42" r="2.5" fill="#fff"/><circle cx="29" cy="42" r="5.5" fill="#be185d"/><circle cx="29" cy="42" r="2.5" fill="#fff"/><path d="M1 27l-4-2M1 32l-5 1M1 37l-4 2" stroke="#be185d" stroke-width="2.5" stroke-linecap="round"/><circle cx="42" cy="16" r="8" fill="#fdf2f8" stroke="#be185d" stroke-width="2.2"/><path d="M42 10v6l4 2.5" stroke="#be185d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Immediate Appts %</div><div class="kc-val" id="cxo-imm-pct">—</div><div class="kc-sub" id="cxo-imm-pct-sub">Walk-in pressure</div></div></div>
@@ -938,7 +938,16 @@ select:hover,select:focus{border-color:var(--orange);}
           <div class="ops-icon">🚛</div>
           <div class="today-pill">Today</div>
           <div class="ops-label">Today's Gate-Ins</div>
-          <div class="ops-count" id="ops-today-gates" style="color:#6366F1;">—</div>
+          <div style="display:flex;align-items:stretch;gap:8px;margin:6px 0 5px;">
+            <div style="flex:1;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:8px 10px;cursor:default;">
+              <div style="font-size:9px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Scheduled</div>
+              <div id="ops-today-scheduled" style="font-size:26px;font-weight:700;color:#6366F1;letter-spacing:-.02em;line-height:1;">—</div>
+            </div>
+            <div style="flex:1;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:8px 10px;cursor:default;">
+              <div style="font-size:9px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Gate-Ins</div>
+              <div id="ops-today-gates" style="font-size:26px;font-weight:700;color:#6366F1;letter-spacing:-.02em;line-height:1;">—</div>
+            </div>
+          </div>
           <div class="ops-sub" id="ops-today-gates-sub">across all FCs</div>
           <button class="ops-dl-btn" onclick="exportOpsKPI('today-gates')" title="Download CSV">⬇ Download</button>
         </div>
@@ -948,6 +957,16 @@ select:hover,select:focus{border-color:var(--orange);}
           <div id="pending-prev-pill" class="today-pill" style="display:none;background:#FFF7ED;color:#f59e0b;border-color:#FDBA74;">Previous</div>
           <div class="ops-label">Pending Unloading</div>
           <div class="ops-count" id="ops-pending-unload" style="color:#f59e0b;">—</div>
+          <div id="ops-pending-split" style="display:none;align-items:stretch;gap:8px;margin:6px 0 5px;">
+            <div style="flex:1;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:8px 10px;cursor:default;">
+              <div style="font-size:9px;font-weight:700;color:#16A34A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Total Fulfilled</div>
+              <div id="ops-today-fulfilled" style="font-size:26px;font-weight:700;color:#16A34A;letter-spacing:-.02em;line-height:1;">—</div>
+            </div>
+            <div style="flex:1;background:#FFF7ED;border:1px solid #FDBA74;border-radius:10px;padding:8px 10px;cursor:default;">
+              <div style="font-size:9px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Pending Unloading</div>
+              <div id="ops-pending-unload-split" style="font-size:26px;font-weight:700;color:#f59e0b;letter-spacing:-.02em;line-height:1;">—</div>
+            </div>
+          </div>
           <div class="ops-sub" id="ops-pending-sub">Gate-In, no Unloading Start</div>
           <button class="ops-dl-btn" onclick="exportOpsKPI('pending-unload')" title="Download CSV">⬇ Download</button>
         </div>
@@ -2885,6 +2904,11 @@ function renderOps() {
   const fcSel = getSelectedMs('fc');
   const todayFC = fcSel ? todayData.filter(r=>fcSel.includes(r['FC'])) : todayData;
 
+  // "Today's Scheduled" — appts whose Scheduled Date is today
+  const todayScheduledData = ALL_DATA.filter(r=>r._schedDate&&r._schedDate.getTime()===today.getTime());
+  const todayScheduledFC = fcSel ? todayScheduledData.filter(r=>fcSel.includes(r['FC'])) : todayScheduledData;
+
+  s('ops-today-scheduled', todayScheduledFC.length);
   s('ops-today-gates', todayFC.length);
   s('ops-today-gates-sub', [...new Set(todayFC.map(r=>r['FC']))].join(', ')||'—');
 
@@ -2910,11 +2934,32 @@ function renderOps() {
   const pendingSub = document.getElementById('ops-pending-sub');
   if(pendingSub) pendingSub.textContent = 'Gate-In, no Unloading Start';
 
+  // When the date filter is set to "Today", show a split:
+  // Total Fulfilled (today's scheduled appts that have both Gate-In and Gate-Out)
+  // vs Pending Unloading (today's scheduled appts gated-in but not yet unloaded/out)
+  const pendingCountEl = document.getElementById('ops-pending-unload');
+  const pendingSplitEl = document.getElementById('ops-pending-split');
+  if (isFilterToday) {
+    const todaySchedRows = D.filter(r=>r._schedDate&&r._schedDate.getTime()===today.getTime());
+    const fulfilledToday = todaySchedRows.filter(r=>r._gateIn&&r._gateOut);
+    const pendingUnloadToday = todaySchedRows.filter(r=>r._gateIn&&!r._unloadStart&&!r._gateOut);
+    s('ops-today-fulfilled', fulfilledToday.length);
+    s('ops-pending-unload-split', pendingUnloadToday.length);
+    if (pendingCountEl) pendingCountEl.style.display = 'none';
+    if (pendingSplitEl) pendingSplitEl.style.display = 'flex';
+    if (pendingSub) pendingSub.textContent = 'Today\'s scheduled appts';
+    window._opsKPI = window._opsKPI||{};
+    window._opsKPI.pendingRows = pendingUnloadToday;
+  } else {
+    if (pendingCountEl) pendingCountEl.style.display = '';
+    if (pendingSplitEl) pendingSplitEl.style.display = 'none';
+  }
+
   // Currently Unloading: from FILTERED
   const unloadingRows = D.filter(r=>r._unloadStart&&!r._unloadEnd);
   s('ops-unloading-now', unloadingRows.length);
   window._opsKPI = window._opsKPI||{};
-  window._opsKPI.pendingRows = pendingRows;
+  if (!isFilterToday) window._opsKPI.pendingRows = pendingRows;
   window._opsKPI.unloadingRows = unloadingRows;
   window._opsKPI.todayFCRows = todayFC;
 
@@ -3290,6 +3335,35 @@ function exportDSKPI() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href=url; a.download='DS_Appointments_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function exportDetentionKPI() {
+  if (!FILTERED||!FILTERED.length){alert('No data loaded yet.');return;}
+  // Detained = completed appts (Gate-In + Gate-Out) where Gate-Out date != Gate-In date
+  const rows = FILTERED.filter(r => {
+    if (!r._gateIn||!r._gateOut) return false;
+    const d1=new Date(r._gateIn); d1.setHours(0,0,0,0);
+    const d2=new Date(r._gateOut); d2.setHours(0,0,0,0);
+    return d1.getTime()!==d2.getTime();
+  });
+  if (!rows.length){alert('No detained appointments in current filter.');return;}
+  const cols = ['FC','Client','Appt Type','Appt ID (External)','Scheduled Date',
+    'Gate In Time','Gate Out Time','Status','Updated Status',
+    'Units','Good Units','Damaged Units','Short Units','Total Units',
+    'Vehicle Size','Item Classification'];
+  const header = cols.join(',');
+  const csvRows = rows.map(r => cols.map(col => {
+    const v = r[col]!==undefined ? r[col] : '';
+    const s = String(v).replace(/"/g,'""');
+    return (s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s+'"':s;
+  }).join(','));
+  const csv = '\uFEFF'+[header,...csvRows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='Detention_Appointments_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
