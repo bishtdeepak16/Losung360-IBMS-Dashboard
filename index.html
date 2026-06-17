@@ -914,7 +914,7 @@ select:hover,select:focus{border-color:var(--orange);}
         <div class="kc green"><div class="kc-icon-box">✅</div><div class="kc-body"><div class="kc-lbl">Appt Fulfilment %</div><div class="kc-val" id="cxo-fulfil">—</div><div class="kc-sub" id="cxo-fulfil-sub">Gate-Ins / Scheduled</div></div></div>
         <div class="kc orange"><div class="kc-icon-box">📅</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Scheduled Date Adherence</div><div class="kc-val" id="cxo-adherence">—</div><div class="kc-sub">Advance appts · came on committed day</div></div></div>
         <div class="kc lime"><div class="kc-icon-box">🎯</div><div class="kc-body"><div class="kc-lbl">Same-Day Clearance %</div><div class="kc-val" id="cxo-sameday">—</div><div class="kc-sub" id="cxo-sameday-sub">Gate-Out = Gate-In date</div></div></div>
-        <div class="kc amber"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="30" r="17" fill="#fde68a" stroke="#d97706" stroke-width="2.5"/><circle cx="26" cy="30" r="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/><path d="M26 20v10l6 4" stroke="#b45309" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="16" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><rect x="31" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><path d="M14 10h24" stroke="#d97706" stroke-width="2" stroke-linecap="round"/></svg></div><div class="kc-body" style="padding-top:0;padding-right:0;"><div class="kc-lbl">Detention Rate</div><div class="kc-val" id="cxo-det-abs">—</div><div class="kc-sub" id="cxo-det-sub">Not cleared same day</div><div style="margin-top:3px;"><span onclick="openDetentionBreakupModal()" style="cursor:pointer;color:#d97706;font-weight:700;font-size:9.5px;display:inline-flex;align-items:center;gap:3px;text-decoration:underline;" title="View day-wise breakup">ⓘ View Breakup</span></div></div><button class="ops-dl-btn" onclick="exportDetentionKPI()" title="Download detained appointments CSV" style="font-size:8px;padding:2px 7px;bottom:8px;right:10px;">⬇ Export</button></div>
+        <div class="kc amber"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="30" r="17" fill="#fde68a" stroke="#d97706" stroke-width="2.5"/><circle cx="26" cy="30" r="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/><path d="M26 20v10l6 4" stroke="#b45309" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="16" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><rect x="31" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><path d="M14 10h24" stroke="#d97706" stroke-width="2" stroke-linecap="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Detention Rate</div><div class="kc-val" id="cxo-det-abs">—</div><div class="kc-sub">Not cleared same day</div></div><button class="ops-dl-btn" onclick="openDetentionBreakupModal()" title="View day-wise breakup" style="background:#fffbeb;border-color:#fcd34d;color:#d97706;">ⓘ View Breakup</button></div>
         <div class="kc red"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="6" y="38" width="40" height="6" rx="1.5" fill="#b91c1c" opacity=".5"/><rect x="10" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="36" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="10" y="12" width="32" height="22" rx="2.5" fill="#fca5a5"/><rect x="10" y="12" width="32" height="22" rx="2.5" stroke="#b91c1c" stroke-width="2.5"/><path d="M22 12l-6 12 8-5-8 21" stroke="#b91c1c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 7l6 5M43 7l-6 5" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Damage + Shortage %</div><div class="kc-val" id="cxo-dsrate">—</div><div class="kc-sub">vs Units as per Docs</div></div><button class="ops-dl-btn" onclick="exportDSKPI()" title="Download D+S appointments CSV" style="font-size:8px;padding:2px 7px;bottom:8px;right:10px;">⬇ Export</button></div>
         <div class="kc amber"><div class="kc-icon-box">⏱</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Median Gate-to-Gate TAT</div><div class="kc-val" id="cxo-tat">—</div><div class="kc-sub">Hours (completed only)</div></div></div>
         <div class="kc pink"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="2" y="22" width="30" height="18" rx="2.5" fill="#f9a8d4" stroke="#be185d" stroke-width="2"/><rect x="2" y="22" width="10" height="18" rx="2.5" fill="#db2777" opacity=".7"/><path d="M32 28h6l5 7H32" stroke="#be185d" stroke-width="2" stroke-linejoin="round" fill="#f9a8d4"/><circle cx="11" cy="42" r="5.5" fill="#be185d"/><circle cx="11" cy="42" r="2.5" fill="#fff"/><circle cx="29" cy="42" r="5.5" fill="#be185d"/><circle cx="29" cy="42" r="2.5" fill="#fff"/><path d="M1 27l-4-2M1 32l-5 1M1 37l-4 2" stroke="#be185d" stroke-width="2.5" stroke-linecap="round"/><circle cx="42" cy="16" r="8" fill="#fdf2f8" stroke="#be185d" stroke-width="2.2"/><path d="M42 10v6l4 2.5" stroke="#be185d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Immediate Appts %</div><div class="kc-val" id="cxo-imm-pct">—</div><div class="kc-sub" id="cxo-imm-pct-sub">Walk-in pressure</div></div></div>
@@ -967,7 +967,7 @@ select:hover,select:focus{border-color:var(--orange);}
         <div class="cc blue">
           <div class="cc-title" id="plan-load-title">📅 Upcoming Load — Next 14 Days by FC</div><div class="cc-export-btn" style="position:absolute;top:10px;right:14px;" onclick="exportTableData('upcoming','Upcoming_Load')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Excel</div>
           <div class="cc-sub" id="plan-load-sub" style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:nowrap;"><span id="plan-load-sub-text" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Appointments + Units scheduled per FC</span></div>
-          <div id="plan-load-table-wrap"><table class="fc-table"><thead><tr><th style="text-align:center;">FC</th><th style="text-align:center;">Appts</th><th style="text-align:center;">Units</th><th style="text-align:center;">Avg U/Appt</th></tr></thead><tbody id="plan-load-tbody"></tbody></table></div>
+          <div id="plan-load-table-wrap"><table class="fc-table"><thead id="plan-load-thead"><tr><th style="text-align:center;">FC</th><th style="text-align:center;">Appts</th><th style="text-align:center;">Units</th><th style="text-align:center;">Avg U/Appt</th></tr></thead><tbody id="plan-load-tbody"></tbody></table></div>
         </div>
         <div class="cc red">
           <div class="cc-title">⚠️ Open Appointments — At Risk</div><div class="cc-export-btn" style="position:absolute;top:10px;right:14px;" onclick="exportTableData('open-risk','Open_Appointments_At_Risk')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Excel</div>
@@ -1025,7 +1025,6 @@ select:hover,select:focus{border-color:var(--orange);}
               <div id="ops-pending-unload-split" style="font-size:26px;font-weight:700;color:#f59e0b;letter-spacing:-.02em;line-height:1;">—</div>
             </div>
           </div>
-          <div class="ops-sub" id="ops-pending-sub">Gate-In vehicles — selected date's scheduled appts</div>
           <button class="ops-dl-btn" onclick="exportOpsKPI('pending-unload')" title="Download CSV">⬇ Download</button>
         </div>
         <div class="ops-card ok">
@@ -2067,7 +2066,7 @@ function renderDetentionKPI(D) {
   // This guarantees: Same-Day% + D1% + D2% + D3% + D3+% = exactly 100%.
   const completed = D.filter(r => r._gateIn && r._gateOut);
   const total = completed.length;
-  if (!total) { s('cxo-det-abs','—'); s('cxo-det-sub','No completed appts'); window._detentionKPI=null; return; }
+  if (!total) { s('cxo-det-abs','—'); window._detentionKPI=null; return; }
   // "Gated in after 3pm on its own scheduled date" — explains a likely cause of detention
   function gatedInLate(r) {
     if (!r._schedDate || !r._gateIn) return false;
@@ -2092,7 +2091,6 @@ function renderDetentionKPI(D) {
   const detained = d1+d2+d3+d3p;
   const absRate = (detained/total*100).toFixed(1);
   s('cxo-det-abs', absRate+'%');
-  s('cxo-det-sub', detained.toLocaleString()+' of '+total.toLocaleString()+' completed');
   window._detentionKPI = {
     total, detained,
     buckets: [
@@ -2132,6 +2130,11 @@ function openDetentionBreakupModal() {
   closeBtn.style.cssText = 'position:absolute;top:14px;right:16px;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;';
   closeBtn.onclick = () => modal.remove();
 
+  const exportBtn = document.createElement('button');
+  exportBtn.innerHTML = '⬇ Export';
+  exportBtn.style.cssText = 'position:absolute;top:16px;right:52px;background:#ecfdf5;border:1px solid #6ee7b7;color:#059669;font-size:10px;font-weight:700;padding:5px 11px;border-radius:20px;cursor:pointer;font-family:\'Inter\',sans-serif;white-space:nowrap;';
+  exportBtn.onclick = () => exportDetentionKPI();
+
   const body = document.createElement('div');
   body.style.cssText = 'padding:22px 22px 22px;overflow:auto;flex:1;';
   const maxCount = Math.max(...data.buckets.map(b=>b.count), 1);
@@ -2148,6 +2151,7 @@ function openDetentionBreakupModal() {
 
   box.appendChild(header);
   box.appendChild(closeBtn);
+  box.appendChild(exportBtn);
   box.appendChild(body);
   modal.appendChild(box);
   modal.onclick = e => { if(e.target===modal) modal.remove(); };
@@ -2713,10 +2717,19 @@ function renderPlanner() {
     tableWrap.style.overflowY = isExpanded ? 'auto' : '';
   }
 
+  // Swap thead: contracted = FC|Appts|Units|Avg U/Appt (4 cols, unchanged)
+  //             expanded   = FC|Brand|Appts|Units|Avg U/Appt (5 cols, Brand inserted after FC)
+  const thead = document.getElementById('plan-load-thead');
+  if (thead) {
+    thead.innerHTML = isExpanded
+      ? '<tr><th style="text-align:center;">FC</th><th style="text-align:center;">Brand</th><th style="text-align:center;">Appts</th><th style="text-align:center;">Units</th><th style="text-align:center;">Avg U/Appt</th></tr>'
+      : '<tr><th style="text-align:center;">FC</th><th style="text-align:center;">Appts</th><th style="text-align:center;">Units</th><th style="text-align:center;">Avg U/Appt</th></tr>';
+  }
+
   const tbody = document.getElementById('plan-load-tbody');
   if (tbody) {
     if (!isExpanded) {
-      // Flat per-FC summary (original view)
+      // Flat per-FC summary (original view) — 4 columns, unchanged
       tbody.innerHTML = FC_ORDER.map(fc=>{
         const rows = loadRows.filter(r=>r['FC']===fc);
         if (!rows.length) return '';
@@ -2725,58 +2738,52 @@ function renderPlanner() {
         const col = FC_COLORS[fc]||'#888';
         return `<tr><td style="text-align:center;"><span class="fc-dot" style="background:${col}"></span>${fc}</td><td style="text-align:center;">${rows.length}</td><td style="text-align:center;">${fmtK(units)}</td><td style="text-align:center;">${fmtK(avgUnits)}</td></tr>`;
       }).join('');
+      if (!tbody.innerHTML) tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:12px;">No upcoming appointments in next ${_ld} days</td></tr>`;
     } else {
-      // Expanded: FC > Brand > Client > Scheduled Date
+      // Expanded — 5 columns: FC | Brand | Appts | Units | Avg U/Appt
+      // Row 1 (per FC)            : FC name,  Brand blank
+      // Row 2 (per Client+Brand)  : Client name in FC col, actual Brand in Brand col
+      // Row 3 (per Sched. Date)   : Date in FC col, Brand blank — nested under its Client+Brand row
       tbody.innerHTML = FC_ORDER.map(fc=>{
         const fcRows = loadRows.filter(r=>r['FC']===fc);
         if (!fcRows.length) return '';
         const col = FC_COLORS[fc]||'#888';
         const fcUnits = fcRows.reduce((a,r)=>a+r._units,0);
         const fcAvg = fcRows.length ? Math.round(fcUnits/fcRows.length) : 0;
-        let html = `<tr style="background:var(--orange-tint);"><td style="text-align:center;font-weight:700;"><span class="fc-dot" style="background:${col}"></span>${fc}</td><td style="text-align:center;font-weight:700;">${fcRows.length}</td><td style="text-align:center;font-weight:700;">${fmtK(fcUnits)}</td><td style="text-align:center;font-weight:700;">${fmtK(fcAvg)}</td></tr>`;
+        let html = `<tr style="background:var(--orange-tint);"><td style="text-align:center;font-weight:700;"><span class="fc-dot" style="background:${col}"></span>${fc}</td><td style="text-align:center;font-weight:700;color:var(--text3);">—</td><td style="text-align:center;font-weight:700;">${fcRows.length}</td><td style="text-align:center;font-weight:700;">${fmtK(fcUnits)}</td><td style="text-align:center;font-weight:700;">${fmtK(fcAvg)}</td></tr>`;
 
-        // Group by brand
-        const byBrand = {};
+        // Group by Client + Brand combination — each unique pair gets its own row
+        const byClientBrand = {};
         fcRows.forEach(r=>{
+          const cl = normClient(r['Client']||'?');
           const br = (r['Brand']||'').toString().trim() || 'Unspecified';
-          (byBrand[br] = byBrand[br] || []).push(r);
+          const key = cl+'|||'+br;
+          (byClientBrand[key] = byClientBrand[key] || {cl, br, rows:[]}).rows.push(r);
         });
-        Object.keys(byBrand).sort().forEach(br=>{
-          const brRows = byBrand[br];
-          const brUnits = brRows.reduce((a,r)=>a+r._units,0);
-          const brAvg = brRows.length ? Math.round(brUnits/brRows.length) : 0;
-          html += `<tr><td style="text-align:center;padding-left:20px;font-weight:700;color:#f97316;">🏷️ ${br}</td><td style="text-align:center;font-weight:700;">${brRows.length}</td><td style="text-align:center;font-weight:700;">${fmtK(brUnits)}</td><td style="text-align:center;font-weight:700;">${fmtK(brAvg)}</td></tr>`;
+        Object.keys(byClientBrand).sort().forEach(key=>{
+          const grp = byClientBrand[key];
+          const grpRows = grp.rows;
+          const grpUnits = grpRows.reduce((a,r)=>a+r._units,0);
+          const grpAvg = grpRows.length ? Math.round(grpUnits/grpRows.length) : 0;
+          html += `<tr><td style="text-align:center;padding-left:24px;font-weight:600;color:var(--text2);">${grp.cl}</td><td style="text-align:center;font-weight:600;color:#f97316;">🏷️ ${grp.br}</td><td style="text-align:center;font-weight:600;">${grpRows.length}</td><td style="text-align:center;font-weight:600;">${fmtK(grpUnits)}</td><td style="text-align:center;font-weight:600;">${fmtK(grpAvg)}</td></tr>`;
 
-          // Group by client within brand
-          const byClient = {};
-          brRows.forEach(r=>{
-            const cl = normClient(r['Client']||'?');
-            (byClient[cl] = byClient[cl] || []).push(r);
+          // Group by scheduled date within this client+brand
+          const byDate = {};
+          grpRows.forEach(r=>{
+            const dk = fmtDate(r._schedDate);
+            (byDate[dk] = byDate[dk] || []).push(r);
           });
-          Object.keys(byClient).sort().forEach(cl=>{
-            const clRows = byClient[cl];
-            const clUnits = clRows.reduce((a,r)=>a+r._units,0);
-            const clAvg = clRows.length ? Math.round(clUnits/clRows.length) : 0;
-            html += `<tr><td style="text-align:center;padding-left:38px;font-weight:600;color:var(--text2);">${cl}</td><td style="text-align:center;font-weight:600;">${clRows.length}</td><td style="text-align:center;font-weight:600;">${fmtK(clUnits)}</td><td style="text-align:center;font-weight:600;">${fmtK(clAvg)}</td></tr>`;
-
-            // Group by scheduled date
-            const byDate = {};
-            clRows.forEach(r=>{
-              const dk = fmtDate(r._schedDate);
-              (byDate[dk] = byDate[dk] || []).push(r);
-            });
-            Object.keys(byDate).sort().forEach(dk=>{
-              const dRows = byDate[dk];
-              const dUnits = dRows.reduce((a,r)=>a+r._units,0);
-              const dAvg = dRows.length ? Math.round(dUnits/dRows.length) : 0;
-              html += `<tr><td style="text-align:center;padding-left:56px;font-size:.7rem;color:var(--text3);">${dk}</td><td style="text-align:center;font-size:.7rem;color:var(--text3);">${dRows.length}</td><td style="text-align:center;font-size:.7rem;color:var(--text3);">${fmtK(dUnits)}</td><td style="text-align:center;font-size:.7rem;color:var(--text3);">${fmtK(dAvg)}</td></tr>`;
-            });
+          Object.keys(byDate).sort().forEach(dk=>{
+            const dRows = byDate[dk];
+            const dUnits = dRows.reduce((a,r)=>a+r._units,0);
+            const dAvg = dRows.length ? Math.round(dUnits/dRows.length) : 0;
+            html += `<tr><td style="text-align:center;padding-left:44px;font-size:.7rem;color:var(--text3);">${dk}</td><td style="text-align:center;font-size:.7rem;color:var(--text3);">—</td><td style="text-align:center;font-size:.7rem;color:var(--text3);">${dRows.length}</td><td style="text-align:center;font-size:.7rem;color:var(--text3);">${fmtK(dUnits)}</td><td style="text-align:center;font-size:.7rem;color:var(--text3);">${fmtK(dAvg)}</td></tr>`;
           });
         });
         return html;
       }).join('');
+      if (!tbody.innerHTML) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:12px;">No upcoming appointments in next ${_ld} days</td></tr>`;
     }
-    if (!tbody.innerHTML) tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:12px;">No upcoming appointments in next ${_ld} days</td></tr>`;
   }
 
   // Open appointments list
@@ -3340,8 +3347,6 @@ function renderOps() {
   const pendingUnloadRows = arrivedRows.filter(r=>!(r._unloadStart&&r._unloadEnd)); // not started OR started-not-finished (combined)
   s('ops-today-fulfilled', unloadedRows.length);      // "Unloaded" box
   s('ops-pending-unload-split', pendingUnloadRows.length); // "Pending Unload" box
-  const pendingSub = document.getElementById('ops-pending-sub');
-  if (pendingSub) pendingSub.textContent = "Gate-In vehicles — selected date's scheduled appts";
   window._opsKPI = window._opsKPI||{};
   window._opsKPI.pendingRows = pendingUnloadRows;
   window._opsKPI.unloadedRows = unloadedRows;
