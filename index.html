@@ -914,7 +914,7 @@ select:hover,select:focus{border-color:var(--orange);}
         <div class="kc green"><div class="kc-icon-box">✅</div><div class="kc-body"><div class="kc-lbl">Appt Fulfilment %</div><div class="kc-val" id="cxo-fulfil">—</div><div class="kc-sub" id="cxo-fulfil-sub">Gate-Ins / Scheduled</div></div></div>
         <div class="kc orange"><div class="kc-icon-box">📅</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Scheduled Date Adherence</div><div class="kc-val" id="cxo-adherence">—</div><div class="kc-sub">Advance appts · came on committed day</div></div></div>
         <div class="kc lime"><div class="kc-icon-box">🎯</div><div class="kc-body"><div class="kc-lbl">Same-Day Clearance %</div><div class="kc-val" id="cxo-sameday">—</div><div class="kc-sub" id="cxo-sameday-sub">Gate-Out = Gate-In date</div></div></div>
-        <div class="kc amber"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="30" r="17" fill="#fde68a" stroke="#d97706" stroke-width="2.5"/><circle cx="26" cy="30" r="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/><path d="M26 20v10l6 4" stroke="#b45309" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="16" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><rect x="31" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><path d="M14 10h24" stroke="#d97706" stroke-width="2" stroke-linecap="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Detention Rate</div><div class="kc-val" id="cxo-det-abs">—</div><div class="kc-sub">Not cleared same day</div></div><button class="ops-dl-btn" onclick="openDetentionBreakupModal()" title="View day-wise breakup" style="background:#fffbeb;border-color:#fcd34d;color:#d97706;">ⓘ View Breakup</button></div>
+        <div class="kc amber"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="30" r="17" fill="#fde68a" stroke="#d97706" stroke-width="2.5"/><circle cx="26" cy="30" r="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/><path d="M26 20v10l6 4" stroke="#b45309" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="16" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><rect x="31" y="7" width="5" height="7" rx="1.5" fill="#d97706" opacity=".8"/><path d="M14 10h24" stroke="#d97706" stroke-width="2" stroke-linecap="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Detention Rate</div><div class="kc-val" id="cxo-det-abs">—</div><div class="kc-sub" style="padding-right:58px;">Not cleared same day</div></div><button class="ops-dl-btn" onclick="openDetentionBreakupModal()" title="View day-wise breakup" style="background:#fffbeb;border-color:#fcd34d;color:#d97706;font-size:7.5px;padding:2.5px 7px;">View Breakup</button></div>
         <div class="kc red"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="6" y="38" width="40" height="6" rx="1.5" fill="#b91c1c" opacity=".5"/><rect x="10" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="36" y="33" width="6" height="5" rx="1" fill="#b91c1c" opacity=".6"/><rect x="10" y="12" width="32" height="22" rx="2.5" fill="#fca5a5"/><rect x="10" y="12" width="32" height="22" rx="2.5" stroke="#b91c1c" stroke-width="2.5"/><path d="M22 12l-6 12 8-5-8 21" stroke="#b91c1c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 7l6 5M43 7l-6 5" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Damage + Shortage %</div><div class="kc-val" id="cxo-dsrate">—</div><div class="kc-sub">vs Units as per Docs</div></div><button class="ops-dl-btn" onclick="exportDSKPI()" title="Download D+S appointments CSV" style="font-size:8px;padding:2px 7px;bottom:8px;right:10px;">⬇ Export</button></div>
         <div class="kc amber"><div class="kc-icon-box">⏱</div><div class="kc-body"><div class="kc-lbl" style="font-size:8.5px;line-height:1.2;">Median Gate-to-Gate TAT</div><div class="kc-val" id="cxo-tat">—</div><div class="kc-sub">Hours (completed only)</div></div></div>
         <div class="kc pink"><div class="kc-icon-box"><svg width="22" height="22" viewBox="0 0 52 52" fill="none"><rect x="2" y="22" width="30" height="18" rx="2.5" fill="#f9a8d4" stroke="#be185d" stroke-width="2"/><rect x="2" y="22" width="10" height="18" rx="2.5" fill="#db2777" opacity=".7"/><path d="M32 28h6l5 7H32" stroke="#be185d" stroke-width="2" stroke-linejoin="round" fill="#f9a8d4"/><circle cx="11" cy="42" r="5.5" fill="#be185d"/><circle cx="11" cy="42" r="2.5" fill="#fff"/><circle cx="29" cy="42" r="5.5" fill="#be185d"/><circle cx="29" cy="42" r="2.5" fill="#fff"/><path d="M1 27l-4-2M1 32l-5 1M1 37l-4 2" stroke="#be185d" stroke-width="2.5" stroke-linecap="round"/><circle cx="42" cy="16" r="8" fill="#fdf2f8" stroke="#be185d" stroke-width="2.2"/><path d="M42 10v6l4 2.5" stroke="#be185d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="kc-body"><div class="kc-lbl">Immediate Appts %</div><div class="kc-val" id="cxo-imm-pct">—</div><div class="kc-sub" id="cxo-imm-pct-sub">Walk-in pressure</div></div></div>
@@ -976,7 +976,7 @@ select:hover,select:focus{border-color:var(--orange);}
         </div>
       </div>
       <div class="two-col">
-        <div class="cc amber"><div class="cc-row"><div><div class="cc-title">📊 Brand Show Rate</div><div class="cc-sub">Advance appts only · Gate-In / Scheduled — top 12 clients</div><div class="cc-info-btn" id="info-show-rate" title="All Clients Info">ℹ</div></div></div><div class="rh"><canvas id="plan-show-chart"></canvas></div></div>
+        <div class="cc amber"><div class="cc-row"><div><div class="cc-title">📊 Brand Show Rate</div><div class="cc-sub">Advance appts · Gate-In / Scheduled — top 12 clients</div><div class="cc-info-btn" id="info-show-rate" title="All Clients Info">ℹ</div></div></div><div class="rh"><canvas id="plan-show-chart"></canvas></div></div>
         <div class="cc orange"><div class="cc-row"><div><div class="cc-title">📦 Category Mix — Upcoming 7d</div><div class="cc-sub">Item Classification of scheduled load</div></div></div><div class="rh"><canvas id="plan-category-chart"></canvas></div></div>
       </div>
       <div class="two-col">
@@ -1691,6 +1691,104 @@ function _openManpowerModal(allMp) {
   setTimeout(() => {
     renderModalChart();
     const sel = document.getElementById('mp-sort-sel');
+    if (sel) { sel.value = sortBy; sel.onchange = () => { sortBy = sel.value; renderModalChart(); }; }
+  }, 60);
+}
+// ── TAT Distribution by Client — info box with bars ────────────
+function _openTatModal(allTat) {
+  const existingModal = document.getElementById('tat-modal');
+  if (existingModal) { existingModal.remove(); return; }
+  if (!allTat || !allTat.length) return;
+
+  let sortBy = 'tat'; // tat | appts
+  let modalChart = null;
+
+  function getSorted() {
+    return [...allTat].sort((a,b) => (b[sortBy]||0) - (a[sortBy]||0));
+  }
+
+  function renderModalChart() {
+    if (modalChart) { modalChart.destroy(); modalChart = null; }
+    const canvas = document.getElementById('tat-modal-chart');
+    if (!canvas) return;
+    const sorted = getSorted();
+    const tc = textColor(), gc = gridColor();
+    modalChart = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: sorted.map(c => normClient(c.client)),
+        datasets: [{ data: sorted.map(c=>c.tat), backgroundColor: sorted.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'), borderRadius:5 }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {duration:300, easing:'easeInOutQuart'},
+        plugins: {
+          legend: { display:false },
+          tooltip: {
+            backgroundColor: bgCard(), titleColor: tc, bodyColor: tc,
+            borderColor: isDarkMode()?'#252840':'#ccd0e8', borderWidth:1, padding:10,
+            callbacks: {
+              title: items => normClient(sorted[items[0].dataIndex].client),
+              label: item => {
+                const c = sorted[item.dataIndex];
+                return [` Median TAT: ${c.tat} hr`, ` APPTS: ${c.appts.toLocaleString()}`];
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid:{color:gc}, ticks:{color:tc,font:{size:9}}, border:{color:gc}, title:{display:true,text:'Median Gate-In → Gate-Out hours',color:'#f97316',font:{size:10,weight:'700'},padding:{top:4}} },
+          y: { grid:{display:false}, ticks:{color:tc,font:{size:10,weight:'600'}}, border:{color:gc} }
+        }
+      }
+    });
+  }
+
+  const modal = document.createElement('div');
+  modal.id = 'tat-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);';
+
+  const chartH = Math.max(320, allTat.length * 32 + 72);
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--card-bg);border-radius:20px;padding:0;width:min(96vw,720px);max-height:90vh;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.22);position:relative;display:flex;flex-direction:column;';
+
+  const header = document.createElement('div');
+  header.style.cssText = 'padding:18px 24px 14px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:linear-gradient(135deg,#fff7ed,var(--card-bg));border-radius:20px 20px 0 0;';
+  header.innerHTML = `
+    <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,rgba(249,115,22,.15),rgba(249,115,22,.07));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📊</div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:700;color:var(--text1);letter-spacing:-.01em;">TAT Distribution by Client</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">All clients — median Gate-In → Gate-Out hours</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;margin-right:40px;">
+      <span style="font-size:11px;color:var(--text3);font-weight:600;white-space:nowrap;">Sort by</span>
+      <select id="tat-sort-sel" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text1);cursor:pointer;outline:none;font-weight:600;">
+        <option value="tat">Median TAT ↓</option>
+        <option value="appts">APPTS ↓</option>
+      </select>
+    </div>`;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.style.cssText = 'position:absolute;top:14px;right:16px;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;';
+  closeBtn.onclick = () => { if(modalChart) modalChart.destroy(); modal.remove(); };
+
+  const body = document.createElement('div');
+  body.style.cssText = 'padding:16px 20px 20px;overflow:auto;flex:1;';
+  body.innerHTML = `<div style="height:${chartH}px;"><canvas id="tat-modal-chart"></canvas></div>`;
+
+  box.appendChild(header);
+  box.appendChild(closeBtn);
+  box.appendChild(body);
+  modal.appendChild(box);
+  modal.onclick = e => { if(e.target===modal){ if(modalChart) modalChart.destroy(); modal.remove(); } };
+  document.body.appendChild(modal);
+
+  setTimeout(() => {
+    renderModalChart();
+    const sel = document.getElementById('tat-sort-sel');
     if (sel) { sel.value = sortBy; sel.onchange = () => { sortBy = sel.value; renderModalChart(); }; }
   }, 60);
 }
@@ -2873,9 +2971,10 @@ function renderPlannerLeadChart(D) {
   const rows = _leadMode==='all' ? D : D.filter(r=>r['Appt Type']===_leadMode);
   const byClient={};
   rows.forEach(r=>{const cl=r['Client']||'?';if(r._leadDays!=null){if(!byClient[cl])byClient[cl]=[];byClient[cl].push(r._leadDays);}});
-  const all=Object.entries(byClient).map(([cl,arr])=>({c:cl,avg:+(arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(1)})).sort((a,b)=>b.avg-a.avg);
+  const all=Object.entries(byClient).map(([cl,arr])=>({c:cl,avg:+(arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(1),appts:arr.length})).sort((a,b)=>b.avg-a.avg);
   const top12=all.slice(0,12);
-  renderHBarsCJS('plan-lead-chart',top12.map(x=>normClient(x.c)),top12.map(x=>x.avg),top12.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'),{suffix:' d'});
+  const top12Extra=top12.map(x=>[`APPTS: ${x.appts.toLocaleString()}`]);
+  renderHBarsCJS('plan-lead-chart',top12.map(x=>normClient(x.c)),top12.map(x=>x.avg),top12.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'),{suffix:' d',extra:top12Extra});
   addExportBtn('plan-lead-chart', 'Scheduling_Lead_Time');
   addExportBtn('plan-lead-chart','Scheduling_Lead_Time');
   buildInfoPanel('info-lead-time',all.map(x=>({name:normClient(x.c),val:x.avg})),' d');
@@ -3528,12 +3627,14 @@ function renderOps() {
     clientTatMap[cl].push(r._tatHrs);
   });
   const allTat=Object.entries(clientTatMap).filter(([,v])=>v.length>=2)
-    .map(([k,v])=>([k,+median(v).toFixed(1)])).sort((a,b)=>b[1]-a[1]);
+    .map(([k,v])=>({client:k,tat:+median(v).toFixed(1),appts:v.length})).sort((a,b)=>b.tat-a.tat);
   const top8Tat=allTat.slice(0,8);
-  renderHBarsCJS('ops-tat-fc',top8Tat.map(x=>normClient(x[0])),top8Tat.map(x=>x[1]),top8Tat.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'),{suffix:' hr'});
+  const top8TatExtra=top8Tat.map(x=>[`APPTS: ${x.appts.toLocaleString()}`]);
+  renderHBarsCJS('ops-tat-fc',top8Tat.map(x=>normClient(x.client)),top8Tat.map(x=>x.tat),top8Tat.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'),{suffix:' hr',extra:top8TatExtra});
   addExportBtn('ops-tat-fc', 'TAT_Distribution');
   addExportBtn('ops-tat-fc','TAT_Distribution');
-  buildInfoPanel('info-tat-client',allTat.map(x=>({name:normClient(x[0]),val:x[1]})),' hr');
+  const infoTatBtn = document.getElementById('info-tat-client');
+  if (infoTatBtn) infoTatBtn.onclick = (e) => { e.stopPropagation(); _openTatModal(allTat); };
 
   // Unloading TAT by vehicle size
   const vSizes=['SCV (≤10ft)','LCV (11-16ft)','ICV (17-20ft)','MCV (22-24ft)','HCV (32ft+)'];
