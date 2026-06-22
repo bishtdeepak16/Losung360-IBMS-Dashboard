@@ -1858,18 +1858,21 @@ function exportTableData(type, title) {
   const today=new Date(); today.setHours(0,0,0,0);
   const t7=new Date(today); t7.setDate(t7.getDate()+7);
   let rows=[];
-  const cols=['FC','Client','Appt Type','Appt ID (External)','Scheduled Date',
+  let cols=['FC','Client','Appt Type','Appt ID (External)','Scheduled Date',
     'Requisite Date','Notification Date','Units','Good Units','Status','Updated Status','Item Classification'];
   if(type==='upcoming'){
+    cols=['FC','Brand','Client','Appt Type','Appt ID (External)','Scheduled Date',
+      'Requisite Date','Notification Date','Units','Good Units','Status','Updated Status','Item Classification'];
     const _exportDays = 14; // Upcoming Load table is fixed to a 14-day horizon
     const tExport = new Date(today); tExport.setDate(tExport.getDate()+_exportDays);
     rows=ALL_DATA.filter(r=>r._schedDate&&r._schedDate>=today&&r._schedDate<tExport);
     // Respect global FC filter (top nav)
     const fcSelExp = getSelectedMs('fc');
     if (fcSelExp) rows = rows.filter(r=>fcSelExp.includes(r['FC']));
-    // Respect Upcoming Load card's local FC / Client slicers
+    // Respect Upcoming Load card's local FC / Client / Date slicers
     if (window._planLoadFC) rows = rows.filter(r=>r['FC']===window._planLoadFC);
     if (window._planLoadClient) rows = rows.filter(r=>normClient(r['Client'])===window._planLoadClient);
+    if (window._planLoadDate) rows = rows.filter(r=>fmtDate(r._schedDate)===window._planLoadDate);
     rows = rows.sort((a,b)=>(a._schedDate||0)-(b._schedDate||0));  // sorted by scheduled date
   } else if(type==='open-risk'){
     rows=ALL_DATA.filter(r=>{
