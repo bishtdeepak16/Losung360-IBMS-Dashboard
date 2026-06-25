@@ -1403,14 +1403,35 @@ const CLIENT_SHORT = {
   'Velocity Ventures': 'VELOCITY',
   'LOCITY VENTURES': 'VELOCITY',
 };
+// Fuzzy fallback — after stripping spaces/punctuation/casing, if the cleaned
+// name CONTAINS one of these keyword fragments anywhere, it's treated as that
+// client. This is what catches brand-new spelling variants, extra/missing
+// spaces, or casing differences in the source sheet automatically — without
+// needing a new CLIENT_SHORT entry every time the sheet has a slightly
+// different spelling. Order matters: more specific fragments are checked
+// first so e.g. "ALPHALITE FURNITURE" doesn't get merged with "ALPHALITE LARGE".
+const CLIENT_FRAGMENTS = [
+  ['ALPHALITEFURNITURE', 'ALPHALITE(F)'],
+  ['ALPHALITELARGE',     'ALPHALITE(L)'],
+  ['CROMPTON',           'CGCEL'],
+  ['WHATSUP',            'WHATSUP'],
+  ['LOCITYVENTURES',     'VELOCITY'], // catches the dropped-"VE" typo too
+  ['VELOCITY',           'VELOCITY'],
+];
 function normClient(name) {
   if (!name) return name;
-  // Check exact match first
+  // 1) Exact match first (case-insensitive) — explicit, fastest path
   if (CLIENT_SHORT[name]) return CLIENT_SHORT[name];
-  // Check case-insensitive
   const up = name.toUpperCase();
   for (const [k,v] of Object.entries(CLIENT_SHORT)) {
     if (k.toUpperCase() === up) return v;
+  }
+  // 2) Fuzzy fallback — strip every non-alphanumeric character, then look
+  //    for a known keyword fragment anywhere inside. Handles spacing,
+  //    casing, and punctuation differences automatically.
+  const cleaned = up.replace(/[^A-Z0-9]/g, '');
+  for (const [fragment, short] of CLIENT_FRAGMENTS) {
+    if (cleaned.includes(fragment)) return short;
   }
   return name;
 }
@@ -2010,7 +2031,9 @@ function updateClientFilter(){
   const fc=getSelectedMs('fc');
   // Get clients from FC-filtered data
   const fcData=fc?ALL_DATA.filter(r=>fc.includes((r['FC']||'').trim())):ALL_DATA;
-  const clients=[...new Set(fcData.map(r=>r['Client']).filter(Boolean))].sort();
+  // Normalize + dedupe so spelling/casing/spacing variants of the same client
+  // (e.g. "Whats UP Wellness" / "WHATS UP WELLNESS") show as ONE dropdown entry.
+  const clients=[...new Set(fcData.map(r=>r['Client']).filter(Boolean).map(normClient))].sort();
   const prev=sel.value;
   while(sel.options.length>1)sel.remove(1);
   clients.forEach(cl=>{const o=document.createElement('option');o.value=cl;o.textContent=cl;sel.appendChild(o);});
@@ -2025,7 +2048,7 @@ function applyFilters(){
     if(dateFrom&&r._schedDate&&r._schedDate<dateFrom)return false;
     if(dateTo&&r._schedDate&&r._schedDate>dateTo)return false;
     if(fc&&!fc.includes((r['FC']||'').trim()))return false;
-    if(cli&&r['Client']!==cli)return false;
+    if(cli&&normClient(r['Client'])!==cli)return false;
     if(apt&&r['Appt Type']!==apt)return false;
     return true;
   });
@@ -2616,7 +2639,7 @@ function renderCXODiscipline(D) {
 function renderCXODSByFC(D) {
   const clientDs={};
   D.filter(r=>r['Client']&&r._units>0).forEach(r=>{
-    const cl=r['Client'];
+    const cl=normClient(r['Client']);
     if(!clientDs[cl]) clientDs[cl]={units:0,ds:0};
     clientDs[cl].units+=r._units;
     clientDs[cl].ds+=r._damagedUnits+r._shortUnits;
@@ -2996,7 +3019,7 @@ function renderPlannerShowChart(D) {
   // "Shown" = gate-in date matches the originally scheduled date (same definition
   // used by CXO "Scheduled Date Adherence" and the Brand Show Rate KPI above).
   D.filter(r=>r['Client']&&r._schedDate&&r['Appt Type']==='Advance').forEach(r=>{
-    const cl=r['Client'];
+    const cl=normClient(r['Client']);
     if(!byClient[cl]) byClient[cl]={sched:0,shown:0};
     byClient[cl].sched++;
     if(r._gateIn && r._gateIn.toDateString()===r._schedDate.toDateString()) byClient[cl].shown++;
@@ -3057,7 +3080,7 @@ function renderPlannerLeadChart(D) {
 
   const rows = _leadMode==='all' ? D : D.filter(r=>r['Appt Type']===_leadMode);
   const byClient={};
-  rows.forEach(r=>{const cl=r['Client']||'?';if(r._leadDays!=null){if(!byClient[cl])byClient[cl]=[];byClient[cl].push(r._leadDays);}});
+  rows.forEach(r=>{const cl=normClient(r['Client'])||'?';if(r._leadDays!=null){if(!byClient[cl])byClient[cl]=[];byClient[cl].push(r._leadDays);}});
   const all=Object.entries(byClient).map(([cl,arr])=>({c:cl,avg:+(arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(1),appts:arr.length})).sort((a,b)=>b.avg-a.avg);
   const top12=all.slice(0,12);
   const top12Extra=top12.map(x=>[`APPTS: ${x.appts.toLocaleString()}`]);
@@ -3069,7 +3092,7 @@ function renderPlannerLeadChart(D) {
 
 function renderPlannerVarianceChart(D) {
   const byClient={};
-  D.forEach(r=>{const cl=r['Client']||'?';if(!byClient[cl])byClient[cl]={docs:0,good:0};byClient[cl].docs+=(+r['Units as Per Documents']||0);byClient[cl].good+=r._goodUnits;});
+  D.forEach(r=>{const cl=normClient(r['Client'])||'?';if(!byClient[cl])byClient[cl]={docs:0,good:0};byClient[cl].docs+=(+r['Units as Per Documents']||0);byClient[cl].good+=r._goodUnits;});
   const all=Object.entries(byClient).map(([cl,v])=>({c:cl,diff:v.docs-v.good})).filter(x=>x.diff!==0).sort((a,b)=>b.diff-a.diff);
   const top12=all.slice(0,12);
   renderHBarsCJS('plan-variance-chart',top12.map(x=>normClient(x.c)),top12.map(x=>x.diff),top12.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'),{suffix:' u'});
@@ -3709,7 +3732,7 @@ function renderOps() {
   // TAT by Client — all clients with >=2 completed appts (gate-in to gate-out)
   const clientTatMap={};
   D.filter(r=>r['Client']&&r._tatHrs>0).forEach(r=>{
-    const cl=r['Client'];
+    const cl=normClient(r['Client']);
     if(!clientTatMap[cl]) clientTatMap[cl]=[];
     clientTatMap[cl].push(r._tatHrs);
   });
@@ -3770,7 +3793,7 @@ function renderOps() {
   // Manpower Efficiency — units per manhour (manhour = manpower × unloading hrs per appt)
   const clientMpMap={};
   D.filter(r=>r['Client']&&r._manpower>0&&r._unloadHrs>0&&r._totalUnits>0).forEach(r=>{
-    const cl=r['Client'];
+    const cl=normClient(r['Client']);
     if(!clientMpMap[cl]) clientMpMap[cl]={units:0,manhours:0,cnt:0,manpowerSum:0,goodUnits:0};
     clientMpMap[cl].units+=r._totalUnits;
     clientMpMap[cl].manhours+=r._manpower*r._unloadHrs;
