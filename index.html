@@ -1196,6 +1196,22 @@ function normalizeVehicleSize(v) {
   return 'Other';
 }
 
+// ── Safe numeric parsing ──────────────────────────────────────────
+// The source Google Sheet has inconsistent cell formatting: some numeric
+// columns (e.g. "Units as Per Documents", "Total Units") get thousand
+// separators baked into their exported text ("1,250"), while others
+// ("Units", "Good Units") don't, even for the same row/value. Plain unary-
+// plus (`+value`) returns NaN on any string containing a comma, which then
+// silently becomes 0 via `||0` fallbacks — quietly corrupting every KPI and
+// chart that touches a comma-formatted value ≥1000. This helper strips
+// commas (and stray whitespace) before parsing, so formatting in the sheet
+// can never again produce a wrong number here.
+function toNum(v) {
+  if (v === undefined || v === null || v === '') return 0;
+  const n = parseFloat(String(v).replace(/,/g, '').trim());
+  return isNaN(n) ? 0 : n;
+}
+
 function enrichRow(row){
   row['FC']=(row['FC']||'').trim();
   row._schedDate=parseSchedDate(row['Scheduled Date'], row['Requisite Date']);
@@ -1222,12 +1238,12 @@ function enrichRow(row){
   row._unloadingStatus=row._updatedStatus==='Gate In'?'Pending':row._updatedStatus==='Gate Out'?'Completed':'In Progress';
   row._apptClass=apptClass(row);
   row._vehicleNorm=normalizeVehicleSize(row['Vehicle Size']);
-  row._units=+row['Units']||0;
-  row._goodUnits=+row['Good Units']||0;
-  row._damagedUnits=+row['Damaged Units']||0;
-  row._shortUnits=+row['Short Units']||0;
-  row._totalUnits=+row['Total Units']||0;
-  row._manpower=+row['Manpower Deployed']||0;
+  row._units=toNum(row['Units']);
+  row._goodUnits=toNum(row['Good Units']);
+  row._damagedUnits=toNum(row['Damaged Units']);
+  row._shortUnits=toNum(row['Short Units']);
+  row._totalUnits=toNum(row['Total Units']);
+  row._manpower=toNum(row['Manpower Deployed']);
   row._validated=row['Validated']==='TRUE'||row['Validated']==='true';
   row._tatHrs=0; row._unloadHrs=0;
   if(row._updatedStatus==='Gate Out'&&row._gateIn&&row._unloadEnd){const h=(row._unloadEnd-row._gateIn)/3600000;if(h>0&&h<120)row._tatHrs=h;}
@@ -1840,7 +1856,7 @@ function exportChartData(canvasId, title) {
     rows = FILTERED.filter(r => r._schedDate); // scheduled appts
   } else if (canvasId === 'plan-variance-chart') {
     // Only rows with a declared (Units as Per Documents) vs received (Good Units) variance
-    rows = FILTERED.filter(r => (+r['Units as Per Documents']||0) !== r._goodUnits);
+    rows = FILTERED.filter(r => toNum(r['Units as Per Documents']) !== r._goodUnits);
   }
   const header = cols.join(',');
   const csvRows = rows.map(r => cols.map(col => {
@@ -2831,7 +2847,7 @@ function renderPlanner() {
   s('plan-show', showRate);
 
   // 7. Units Variance
-  const declared = D.reduce((a,r)=>a+(+r['Units as Per Documents']||0),0);
+  const declared = D.reduce((a,r)=>a+toNum(r['Units as Per Documents']),0);
   const received = D.reduce((a,r)=>a+r._goodUnits,0);
   const variance = declared-received;
   s('plan-variance', (variance>0?'+':'')+fmtK(variance));
@@ -3092,7 +3108,7 @@ function renderPlannerLeadChart(D) {
 
 function renderPlannerVarianceChart(D) {
   const byClient={};
-  D.forEach(r=>{const cl=normClient(r['Client'])||'?';if(!byClient[cl])byClient[cl]={docs:0,good:0};byClient[cl].docs+=(+r['Units as Per Documents']||0);byClient[cl].good+=r._goodUnits;});
+  D.forEach(r=>{const cl=normClient(r['Client'])||'?';if(!byClient[cl])byClient[cl]={docs:0,good:0};byClient[cl].docs+=toNum(r['Units as Per Documents']);byClient[cl].good+=r._goodUnits;});
   const all=Object.entries(byClient).map(([cl,v])=>({c:cl,diff:v.docs-v.good})).filter(x=>x.diff!==0).sort((a,b)=>b.diff-a.diff);
   const top12=all.slice(0,12);
   renderHBarsCJS('plan-variance-chart',top12.map(x=>normClient(x.c)),top12.map(x=>x.diff),top12.map((_,i)=>CLIENT_COLORS[i%CLIENT_COLORS.length]+'cc'),{suffix:' u'});
