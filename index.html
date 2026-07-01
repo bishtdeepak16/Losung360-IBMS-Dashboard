@@ -4431,36 +4431,81 @@ const ACCESS_LIST = [
 
 // loadAccessList — reads live from Users sheet, falls back to ACCESS_LIST
 async function loadAccessList() {
-  // Reads from IBMS Users sheet (separate from appointment data sheet)
-  const token = sessionStorage.getItem('gtoken');
-  if (!token) { console.warn('loadAccessList: no token'); return; }
+  // ── Read Users sheet via published CSV — no OAuth token needed ───
+  // The sheet is owned by planning@losung360.com. Previously this called the
+  // Sheets API using the LOGGED-IN USER's token, which forced every user to
+  // grant "access to their Google Sheets". That was wrong — the sheet has
+  // nothing to do with the logged-in user's personal Drive.
+  //
+  // Now it fetches the same way as the main appointment data sheet: a
+  // published CSV URL. The sheet must be set to "Anyone with the link can
+  // view" in Google Sheets → Share settings (one-time setup by Deepak).
+  // After that, no user token is ever needed to read this sheet.
   try {
-    const resp = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
-      { headers: { Authorization: 'Bearer ' + token } }
-    );
-    if (!resp.ok) { console.warn('loadAccessList HTTP error:', resp.status); return; }
-    const data = await resp.json();
-    const rows = data.values || [];
-    if (rows.length < 2) return;
-    // Columns: Email(0) Role(1) FC(2) Views(3) AddedBy(4) AddedOn(5)
-    const loaded = rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map(r=>{
-      const fcRaw   = (r[2]||'All').trim();
-      const viewRaw = (r[3]||'All').trim();
-      const fcs   = fcRaw==='All'   ? ['All'] : fcRaw.split(',').map(s=>s.trim()).filter(Boolean);
-      const views = viewRaw==='All' ? ['CXO','Planner','Ops']
-                                    : viewRaw.split(',').map(s=>s.trim()).filter(Boolean);
-      return { email:r[0].trim().toLowerCase(), role:r[1].trim(), fc:fcs, views };
-    });
-    if (loaded.length > 0) {
-      ACCESS_LIST.length = 0;
-      loaded.forEach(u => ACCESS_LIST.push(u));
-      if (!ACCESS_LIST.find(u=>u.email===MASTER_EMAIL)) {
-        ACCESS_LIST.unshift({email:MASTER_EMAIL, role:'Planning', fc:['All'], views:['CXO','Planner','Ops']});
-      }
-      console.log('loadAccessList: loaded', ACCESS_LIST.length, 'users from IBMS Users sheet');
+    // Try primary published URL first, fall back to gviz if not published yet
+    const urls = [
+      `https://docs.google.com/spreadsheets/d/${USERS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Users`,
+      `https://docs.google.com/spreadsheets/d/${USERS_SHEET_ID}/pub?output=csv&sheet=Users`,
+    ];
+    let csvText = null;
+    for (const url of urls) {
+      try {
+        const r = await fetch(url);
+        if (r.ok) { csvText = await r.text(); break; }
+      } catch(_) {}
     }
-  } catch(e) { console.warn('loadAccessList error:', e); }
+    if (!csvText) {
+      // Sheet not yet published — fall back to Sheets API with stored token
+      const token = sessionStorage.getItem('gtoken');
+      if (!token) { console.warn('loadAccessList: sheet not published and no token'); return; }
+      const resp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${USERS_SHEET_ID}/values/Users`,
+        { headers: { Authorization: 'Bearer ' + token } }
+      );
+      if (!resp.ok) { console.warn('loadAccessList HTTP error:', resp.status); return; }
+      const data = await resp.json();
+      const rows = data.values || [];
+      if (rows.length < 2) return;
+      _parseAccessRows(rows);
+      return;
+    }
+    // Parse CSV text into array-of-arrays (same format as Sheets API values[])
+    const rows = csvText.trim().split('\n').map(line => {
+      // Handle quoted fields (fields may contain commas inside quotes)
+      const result = []; let cur = ''; let inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+        else { cur += c; }
+      }
+      result.push(cur);
+      return result.map(v => v.trim());
+    });
+    if (rows.length < 2) return;
+    _parseAccessRows(rows);
+  } catch(e) {
+    console.warn('loadAccessList error:', e);
+  }
+}
+function _parseAccessRows(rows) {
+  // Columns: Email(0) Role(1) FC(2) Views(3) AddedBy(4) AddedOn(5)
+  const loaded = rows.slice(1).filter(r=>r[0]&&r[1]&&r[2]).map(r=>{
+    const fcRaw   = (r[2]||'All').trim();
+    const viewRaw = (r[3]||'All').trim();
+    const fcs   = fcRaw==='All'   ? ['All'] : fcRaw.split(',').map(s=>s.trim()).filter(Boolean);
+    const views = viewRaw==='All' ? ['CXO','Planner','Ops']
+                                  : viewRaw.split(',').map(s=>s.trim()).filter(Boolean);
+    return { email:r[0].trim().toLowerCase(), role:r[1].trim(), fc:fcs, views };
+  });
+  if (loaded.length > 0) {
+    ACCESS_LIST.length = 0;
+    loaded.forEach(u => ACCESS_LIST.push(u));
+    if (!ACCESS_LIST.find(u=>u.email===MASTER_EMAIL)) {
+      ACCESS_LIST.unshift({email:MASTER_EMAIL, role:'Planning', fc:['All'], views:['CXO','Planner','Ops']});
+    }
+    console.log('loadAccessList: loaded', ACCESS_LIST.length, 'users from IBMS Users sheet');
+  }
 }
 
 let CURRENT_USER = null;  // {email, name, picture, role, fc}
@@ -4505,18 +4550,25 @@ function handleGoogleLogin() {
     showLoginError('Google Sign-In failed to load. Please check your internet connection and refresh.');
     return;
   }
-  google.accounts.id.prompt((notification) => {
-    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      // Fallback: open OAuth popup
-      google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
-        callback: (resp) => {
-          if (resp.access_token) { sessionStorage.setItem('gtoken', resp.access_token); fetchGoogleProfile(resp.access_token); }
-        }
-      }).requestAccessToken();
+  // ── No spreadsheets scope here ───────────────────────────────────
+  // loadAccessList() now reads the Users sheet via a published CSV URL
+  // (same pattern as the main data sheet), so it needs no OAuth token at all.
+  // Login only needs email + profile to identify who is signing in.
+  // The consent screen will only say "See your basic profile info" — no
+  // mention of Google Sheets at all.
+  //
+  // ── No One-Tap prompt here ───────────────────────────────────────
+  // google.accounts.id.prompt() fires its callback asynchronously, so any
+  // popup opened inside it gets blocked by the browser (not a trusted user
+  // gesture). Calling requestAccessToken() directly from the button click IS
+  // a synchronous user gesture — browsers never block it.
+  google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: 'email profile',
+    callback: (resp) => {
+      if (resp.access_token) { sessionStorage.setItem('gtoken', resp.access_token); fetchGoogleProfile(resp.access_token); }
     }
-  });
+  }).requestAccessToken({prompt: ''});
 }
 
 function handleCredentialResponse(response) {
@@ -4526,7 +4578,7 @@ function handleCredentialResponse(response) {
     try {
       google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
-        scope: 'email profile https://www.googleapis.com/auth/spreadsheets',
+        scope: 'email profile',
         hint: user.email,
         prompt: '',
         callback: async (resp) => {
