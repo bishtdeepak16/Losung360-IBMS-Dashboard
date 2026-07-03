@@ -2654,10 +2654,10 @@ function renderCXODiscipline(D) {
 
 function renderCXODSByFC(D) {
   const clientDs={};
-  D.filter(r=>r['Client']&&r._units>0).forEach(r=>{
+  D.filter(r=>r['Client']&&r._totalUnits>0).forEach(r=>{
     const cl=normClient(r['Client']);
     if(!clientDs[cl]) clientDs[cl]={units:0,ds:0};
-    clientDs[cl].units+=r._units;
+    clientDs[cl].units+=r._totalUnits;
     clientDs[cl].ds+=r._damagedUnits+r._shortUnits;
   });
   const all=Object.entries(clientDs).filter(([,v])=>v.units>=500)
