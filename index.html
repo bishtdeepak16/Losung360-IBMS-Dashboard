@@ -2954,15 +2954,20 @@ function renderPlanner() {
   if (tbody) {
     if (!isExpanded) {
       // Flat per-FC summary (original view) — 4 columns, unchanged
-      tbody.innerHTML = FC_ORDER.map(fc=>{
+      const fcRows = FC_ORDER.map(fc=>{
         const rows = loadRows.filter(r=>r['FC']===fc);
         if (!rows.length) return '';
         const units = rows.reduce((a,r)=>a+r._units,0);
         const avgUnits = rows.length ? Math.round(units/rows.length) : 0;
         const col = FC_COLORS[fc]||'#888';
         return `<tr><td style="text-align:center;"><span class="fc-dot" style="background:${col}"></span>${fc}</td><td style="text-align:center;">${rows.length}</td><td style="text-align:center;">${fmtK(units)}</td><td style="text-align:center;">${fmtK(avgUnits)}</td></tr>`;
-      }).join('');
-      if (!tbody.innerHTML) tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:12px;">No upcoming appointments in next ${_ld} days</td></tr>`;
+      });
+      const totalAppts = loadRows.length;
+      const totalUnits = loadRows.reduce((a,r)=>a+r._units,0);
+      const totalAvg = totalAppts ? Math.round(totalUnits/totalAppts) : 0;
+      const totalRow = totalAppts ? `<tr style="border-top:2px solid var(--card-border);background:var(--orange-tint);font-weight:700;"><td style="text-align:center;letter-spacing:.04em;font-size:10px;color:var(--text3);text-transform:uppercase;">TOTAL</td><td style="text-align:center;">${totalAppts}</td><td style="text-align:center;">${fmtK(totalUnits)}</td><td style="text-align:center;">${fmtK(totalAvg)}</td></tr>` : '';
+      tbody.innerHTML = fcRows.join('') + totalRow;
+      if (!loadRows.length) tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:12px;">No upcoming appointments in next ${_ld} days</td></tr>`;
     } else {
       // Expanded — 5 columns: FC | Brand | Appts | Units | Avg U/Appt
       // Row 1 (per FC)            : FC name,  Brand blank
