@@ -11,6 +11,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <script src="https://accounts.google.com/gsi/client" async></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 /* ══ RESET ══ */
@@ -266,6 +267,43 @@ select:hover,select:focus{border-color:var(--orange);}
 
 /* ══ DIAG ══ */
 .diag-box{background:var(--card-bg);border:1px solid var(--card-border);border-radius:10px;padding:14px 18px;margin-bottom:14px;display:none;}
+/* ── AI Report Modal ── */
+#ai-report-overlay{display:none;position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+#ai-report-overlay.open{display:flex;}
+#ai-report-box{background:var(--card-bg);border-radius:20px;width:min(96vw,820px);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.25);}
+#ai-report-header{padding:18px 24px 14px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:linear-gradient(135deg,rgba(99,102,241,.08),var(--card-bg));border-radius:20px 20px 0 0;}
+#ai-report-body{overflow-y:auto;flex:1;padding:24px;}
+#ai-report-key-row{display:flex;gap:8px;align-items:center;margin-bottom:16px;}
+#ai-report-key-inp{flex:1;padding:8px 12px;border-radius:10px;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text1);font-size:12px;outline:none;font-family:var(--font);}
+.ai-rpt-btn{padding:8px 16px;border-radius:10px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);}
+.ai-rpt-btn.generate{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;}
+.ai-rpt-btn.download{background:#ecfdf5;border:1px solid #6ee7b7;color:#059669;}
+.ai-rpt-btn:disabled{opacity:.5;cursor:not-allowed;}
+.ai-report{font-family:'Inter',sans-serif;color:var(--text1);line-height:1.7;}
+.ai-report h1{font-size:20px;font-weight:800;letter-spacing:-.02em;color:var(--text1);margin:0 0 4px;}
+.ai-report .rpt-meta{font-size:12px;color:var(--text3);margin-bottom:20px;}
+.ai-report .rpt-section{margin-bottom:22px;padding:16px 18px;border-radius:14px;border:1px solid var(--card-border);}
+.ai-report .rpt-section h2{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;display:flex;align-items:center;gap:7px;}
+.ai-report .rpt-section p,.ai-report .rpt-section li{font-size:13px;color:var(--text2);margin-bottom:4px;}
+.ai-report .rpt-kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px;}
+.ai-report .rpt-kpi{background:var(--orange-tint);border-radius:10px;padding:10px 12px;text-align:center;}
+.ai-report .rpt-kpi-val{font-size:20px;font-weight:800;letter-spacing:-.02em;color:#6366f1;}
+.ai-report .rpt-kpi-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);font-weight:600;margin-top:2px;}
+.ai-report .rpt-client-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--card-border);}
+.ai-report .rpt-client-row:last-child{border-bottom:none;}
+.ai-report .rpt-client-name{font-weight:700;font-size:12px;width:110px;flex-shrink:0;}
+.ai-report .rpt-client-bar-wrap{flex:1;height:7px;background:var(--card-border);border-radius:4px;overflow:hidden;}
+.ai-report .rpt-client-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,#6366f1,#8b5cf6);}
+.ai-report .rpt-client-stat{font-size:11px;color:var(--text3);width:90px;text-align:right;flex-shrink:0;}
+.ai-report .rpt-highlight{background:rgba(99,102,241,.07);border-left:3px solid #6366f1;padding:8px 12px;border-radius:0 8px 8px 0;font-size:12.5px;margin-bottom:6px;}
+.ai-report .rpt-concern{background:rgba(239,68,68,.06);border-left:3px solid #ef4444;padding:8px 12px;border-radius:0 8px 8px 0;font-size:12.5px;margin-bottom:6px;}
+.ai-report .rpt-action{background:rgba(16,185,129,.06);border-left:3px solid #10b981;padding:8px 12px;border-radius:0 8px 8px 0;font-size:12.5px;margin-bottom:6px;}
+.ai-report .rpt-wow-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--card-border);font-size:12px;}
+.ai-report .rpt-wow-row:last-child{border-bottom:none;}
+.ai-report .rpt-delta-pos{color:#16a34a;font-weight:700;}
+.ai-report .rpt-delta-neg{color:#dc2626;font-weight:700;}
+.ai-spinner{display:inline-block;width:18px;height:18px;border:3px solid rgba(99,102,241,.2);border-top-color:#6366f1;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
 .diag-box.open{display:block;}
 .diag-result{font-size:12px;padding:8px 12px;border-radius:6px;white-space:pre-wrap;word-break:break-all;max-height:120px;overflow:auto;line-height:1.6;}
 .diag-result.ok{border-left:3px solid var(--green);color:#166534;background:#F0FDF4;}
@@ -858,6 +896,10 @@ select:hover,select:focus{border-color:var(--orange);}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         Diagnose
       </button>
+      <button class="btn" id="aiReportBtn" onclick="openAIReport()" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;gap:5px;" title="Generate AI weekly report using Gemini">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        AI Report
+      </button>
     </div>
   </header>
 
@@ -1104,6 +1146,12 @@ select:hover,select:focus{border-color:var(--orange);}
 // ── CONFIG ──────────────────────────────
 const SHEET_ID = '1SgelBlfese2hrxqjUm-ZcEAV7UQXuGmRg10B9ioB04I';
 const USERS_SHEET_ID = '1Fdp5T5WMZNv6Ggwqr4ulVuIgteu0b_Q8rf77pF4d32s';
+const GROQ_KEY = ''; // not used — key lives in Cloudflare Worker (see cloudflare-worker.js)
+// ↓ Paste your Cloudflare Worker URL here after deploying it (see cloudflare-worker.js)
+const GROQ_PROXY = 'https://round-cloud-db1a.deepak-bisht.workers.dev';
+// ↓ Paste your Apps Script Web App URL here after deploying email-webapp.gs
+// Deploy → New Deployment → Web App → Execute as: Me, Who has access: Anyone
+const APPS_SCRIPT_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxbjWWXsXE_6r30F8YzjlA2pmEtgMskdkk6XjvAuOfpGxVUneryILW0Q8op5xIc1_QixA/exec';
 const USERS_GID = '1029277024';
 const MASTER_EMAIL = 'planning@losung360.com';
 const SHEET_GID = '1596417357'; // Appointment Table tab GID from URL
@@ -2111,9 +2159,10 @@ function renderCXO() {
   // slot to a future date will have _schedDate >= today → they land in D (not
   // D_past), so the original null slot no longer appears in D_past either if
   // the sheet was updated. This gives the "true" retrospective null rate.
-  const _cxoToday = new Date(); _cxoToday.setHours(0,0,0,0);
-  const _cxoYest  = new Date(_cxoToday); _cxoYest.setDate(_cxoYest.getDate()-1); _cxoYest.setHours(23,59,59,999);
-  const D_past = D.filter(r => r._schedDate && r._schedDate <= _cxoYest);
+  const _cxoToday = new Date(); _cxoToday.setHours(23,59,59,999); // end of today
+  // Include today's scheduled appointments in all CXO counts regardless of
+  // fulfilment status — "Total Appointments" = everything scheduled up to now.
+  const D_past = D.filter(r => r._schedDate && r._schedDate <= _cxoToday);
 
   // 1. Total Appointments — scheduled up to yesterday (no future appts)
   s('cxo-units', fmtK(D_past.length));
@@ -4874,6 +4923,612 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.target === el) hideSignInLoading();
   });
 });
+</script>
+
+<!-- ═══ AI REPORT MODAL ═══ -->
+<div id="ai-report-overlay" onclick="if(event.target===this)closeAIReport()">
+  <div id="ai-report-box">
+    <div id="ai-report-header">
+      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:800;color:var(--text1);letter-spacing:-.01em;">AI Operations Report</div>
+        <div style="font-size:11px;color:var(--text3);">Powered by Gemini · Losung360 IBMS</div>
+      </div>
+      <div id="ai-report-actions" style="display:flex;gap:8px;align-items:center;margin-right:36px;"></div>
+      <button onclick="closeAIReport()" style="position:absolute;top:14px;right:16px;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text2);font-size:13px;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div id="ai-report-body">
+      <div id="ai-report-content">
+        <div style="text-align:center;padding:56px 24px;">
+          <div style="font-size:40px;margin-bottom:16px;">📊</div>
+          <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:8px;">Weekly Operations Report</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:24px;">Week-on-Week + MTD vs MTD · Powered by Groq AI</div>
+          <button class="ai-rpt-btn generate" id="ai-gen-btn" onclick="triggerAIReport()" style="padding:12px 32px;font-size:13px;">⚡ Generate Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── AI REPORT — Week-on-Week + MTD vs MTD, 2-page layout ──────────
+
+// ── Client priority order for report tables ────────────────────────────────────
+// These clients appear first (in this order), then rest sorted by volume
+const CLIENT_PRIORITY_ORDER = ['DAWNTECH','CGCEL','ALPHALITE(F)','ALPHALITE(L)','VELOCITY','WHATSUP'];
+
+function prioritySort(clients) {
+  return [...clients].sort((a,b)=>{
+    const ai=CLIENT_PRIORITY_ORDER.indexOf(a.cl), bi=CLIENT_PRIORITY_ORDER.indexOf(b.cl);
+    if(ai!==-1&&bi!==-1) return ai-bi;
+    if(ai!==-1) return -1;
+    if(bi!==-1) return 1;
+    return b.gu-a.gu;
+  });
+}
+
+function openAIReport() {
+  document.getElementById('ai-report-overlay').classList.add('open');
+  // If proxy URL not yet configured, show a one-time setup notice for the admin
+  if (GROQ_PROXY.includes('YOUR-WORKER')) {
+    document.getElementById('ai-report-content').innerHTML = `
+      <div style="text-align:center;padding:32px 24px;">
+        <div style="font-size:32px;margin-bottom:12px;">⚙️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text1);margin-bottom:8px;">One-time Admin Setup Required</div>
+        <div style="font-size:12px;color:var(--text3);line-height:1.8;max-width:440px;margin:0 auto;">
+          Deploy the <b>cloudflare-worker.js</b> file to Cloudflare Workers (free),<br>
+          then replace <code>YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev</code><br>
+          with your actual Worker URL in <code>index.html</code>.<br><br>
+          Once done, <b>every user can generate reports with one click</b> —<br>
+          no API key entry needed, key stays secure in Cloudflare.
+        </div>
+      </div>`;
+  }
+}
+function closeAIReport() {
+  document.getElementById('ai-report-overlay').classList.remove('open');
+}
+
+// ── Date windows ──────────────────────────────────────────────────────────────
+// Always called on Monday. "Last week" = Mon-Sun that just ended (yesterday).
+// "Week before" = the Mon-Sun before that. MTD = 1-{lastSunday} vs same in prev month.
+function getReportWindows() {
+  const now = new Date();
+  const dow = now.getDay(); // 0=Sun,1=Mon,...
+  // Days since last Sunday
+  const dSinceSun = dow === 0 ? 0 : dow;
+  const sun1 = new Date(now); sun1.setDate(now.getDate()-dSinceSun); sun1.setHours(23,59,59,999);
+  const mon1 = new Date(sun1); mon1.setDate(sun1.getDate()-6); mon1.setHours(0,0,0,0);
+  const sun2 = new Date(mon1.getTime()-1); sun2.setHours(23,59,59,999);
+  const mon2 = new Date(sun2); mon2.setDate(sun2.getDate()-6); mon2.setHours(0,0,0,0);
+  // MTD: 1st of sun1's month → sun1 vs 1st of prev month → same day prev month
+  const mtdStart  = new Date(sun1.getFullYear(), sun1.getMonth(), 1, 0,0,0,0);
+  // MTD end = yesterday (not today) — today's data is incomplete intraday
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1); yesterday.setHours(23,59,59,999);
+  const mtdEnd    = yesterday;
+  const pmtdStart = new Date(sun1.getFullYear(), sun1.getMonth()-1, 1, 0,0,0,0);
+  const pmtdEnd   = new Date(now.getFullYear(), now.getMonth()-1, now.getDate()-1, 23,59,59,999);
+  const D = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  return {
+    week:  {start:mon1, end:sun1, label:`${D(mon1)} – ${D(sun1)}`},
+    pweek: {start:mon2, end:sun2, label:`${D(mon2)} – ${D(sun2)}`},
+    mtd:   {start:mtdStart, end:mtdEnd, label:`${D(mtdStart)} – ${D(yesterday)}`},
+    pmtd:  {start:pmtdStart,end:pmtdEnd,label:`${D(pmtdStart)} – ${D(pmtdEnd)}`},
+  };
+}
+
+// ── Aggregate metrics for a slice of data ────────────────────────────────────
+function agg(rows) {
+  const n = rows.length;
+  if(!n) return {n:0,topClients:[]};
+  const gi  = rows.filter(r=>r._gateIn).length;
+  const co  = rows.filter(r=>r._gateIn&&r._gateOut);
+  const sd  = co.filter(r=>r._gateIn.toDateString()===r._gateOut.toDateString()).length;
+  const adv = rows.filter(r=>r['Appt Type']==='Advance').length;
+  const nul = rows.filter(r=>r._updatedStatus==='Null').length;
+  const gu  = rows.reduce((a,r)=>a+r._goodUnits,0);
+  const tu  = rows.reduce((a,r)=>a+r._totalUnits,0);
+  const ds  = rows.reduce((a,r)=>a+r._damagedUnits+r._shortUnits,0);
+  const tatA= co.map(r=>r._tatHrs).filter(v=>v>0).sort((a,b)=>a-b);
+  const medT= tatA.length?tatA[Math.floor(tatA.length/2)]:null;
+  const byC={};
+  rows.forEach(r=>{
+    const cl=normClient(r['Client'])||'?';
+    if(!byC[cl]) byC[cl]={n:0,gu:0,tu:0,ds:0,go:0,sd:0,nul:0};
+    byC[cl].n++; byC[cl].gu+=r._goodUnits; byC[cl].tu+=r._totalUnits;
+    byC[cl].ds+=r._damagedUnits+r._shortUnits;
+    if(r._gateOut) byC[cl].go++;
+    if(r._gateIn&&r._gateOut&&r._gateIn.toDateString()===r._gateOut.toDateString()) byC[cl].sd++;
+    if(r._apptClass==='Null') byC[cl].nul++;
+  });
+  const topClients=Object.entries(byC).sort((a,b)=>b[1].gu-a[1].gu).slice(0,15)
+    .map(([cl,v])=>({cl,n:v.n,gu:v.gu,tu:v.tu,
+      dsPct:v.tu>0?+(v.ds/v.tu*100).toFixed(2):null,
+      fulfPct:v.n>0?+(v.go/v.n*100).toFixed(1):null,
+      sdPct:v.go>0?+(v.sd/v.go*100).toFixed(1):null,
+      nullPct:v.n>0?+(v.nul/v.n*100).toFixed(1):null}));
+  return {n,gi,co:co.length,sd,adv,nul,gu,tu,ds,
+    fulfPct:gi>0?+(gi/n*100).toFixed(1):null,
+    sdPct:co.length>0?+(sd/co.length*100).toFixed(1):null,
+    advPct:+(adv/n*100).toFixed(1),
+    nullPct:+(nul/n*100).toFixed(1),
+    dsPct:tu>0?+(ds/tu*100).toFixed(2):null,
+    medTAT:medT?+medT.toFixed(1):null,
+    topClients};
+}
+
+
+// slice() — mirrors CXO D_past: appointments with _schedDate up to end of today.
+// Future appointments (tomorrow+) are excluded from both the report and CXO counts.
+function slice(from, to) {
+  const todayEnd = new Date(); todayEnd.setHours(23,59,59,999);
+  const effectiveTo = to < todayEnd ? to : todayEnd; // cap at end of today
+  return ALL_DATA.filter(r => {
+    if (!r._schedDate) return false;               // no scheduled date → exclude
+    if (r._schedDate < from) return false;         // before range → exclude
+    if (r._schedDate > effectiveTo) return false;  // future (tomorrow+) → exclude
+    return true;
+  });
+}
+
+function compileReportData() {
+  const w = getReportWindows();
+  return {
+    windows:w,
+    generatedAt: new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}),
+    week:  agg(slice(w.week.start,  w.week.end)),
+    pweek: agg(slice(w.pweek.start, w.pweek.end)),
+    mtd:   agg(slice(w.mtd.start,   w.mtd.end)),
+    pmtd:  agg(slice(w.pmtd.start,  w.pmtd.end)),
+  };
+}
+
+// ── Gemini prompt ─────────────────────────────────────────────────────────────
+function buildPrompt(d) {
+  // Send only the bare minimum numbers — every token costs quota on the free tier.
+  // We pre-calculate the deltas ourselves so Gemini only needs to write prose,
+  // not re-derive numbers, keeping the output tokens low too.
+  const S = (v,u='') => v==null?'N/A':`${v}${u}`;
+  const DIFF = (a,b,u='') => {
+    if(a==null||b==null) return 'N/A';
+    const d=(a-b); return `${d>=0?'+':''}${d.toFixed(u==='%'?1:0)}${u}`;
+  };
+  const w=d.week, pw=d.pweek, m=d.mtd, pm=d.pmtd;
+  // Only top 8 clients, only the fields Gemini needs for commentary
+  const cls = (o,po) => (o.topClients||[]).slice(0,8).map(c=>{
+    const pc=(po.topClients||[]).find(x=>x.cl===c.cl);
+    return `${c.cl}:appts=${c.n},gu=${c.gu},ds%=${S(c.dsPct,'%')},sd%=${S(c.sdPct,'%')},prev_gu=${pc?pc.gu:'?'}`;
+  }).join('|');
+
+  const data = `WoW ${d.windows.week.label} vs ${d.windows.pweek.label}:
+appts=${w.n}(prev ${pw.n},${DIFF(w.n,pw.n)}), gi=${w.gi}(${pw.gi}), fulfil%=${S(w.fulfPct,'%')}(${S(pw.fulfPct,'%')},${DIFF(w.fulfPct,pw.fulfPct,'%')}pp), sd%=${S(w.sdPct,'%')}(${S(pw.sdPct,'%')},${DIFF(w.sdPct,pw.sdPct,'%')}pp), gu=${w.gu}(${pw.gu},${DIFF(w.gu,pw.gu)}), ds%=${S(w.dsPct,'%')}(${S(pw.dsPct,'%')},${DIFF(w.dsPct,pw.dsPct,'%')}pp), null%=${S(w.nullPct,'%')}(${S(pw.nullPct,'%')}), tat=${S(w.medTAT,'h')}(${S(pw.medTAT,'h')})
+clients: ${cls(w,pw)}
+
+MTD ${d.windows.mtd.label} vs ${d.windows.pmtd.label}:
+appts=${m.n}(prev ${pm.n},${DIFF(m.n,pm.n)}), gi=${m.gi}(${pm.gi}), fulfil%=${S(m.fulfPct,'%')}(${S(pm.fulfPct,'%')},${DIFF(m.fulfPct,pm.fulfPct,'%')}pp), sd%=${S(m.sdPct,'%')}(${S(pm.sdPct,'%')},${DIFF(m.sdPct,pm.sdPct,'%')}pp), gu=${m.gu}(${pm.gu},${DIFF(m.gu,pm.gu)}), ds%=${S(m.dsPct,'%')}(${S(pm.dsPct,'%')},${DIFF(m.dsPct,pm.dsPct,'%')}pp), null%=${S(m.nullPct,'%')}(${S(pm.nullPct,'%')})
+clients: ${cls(m,pm)}`;
+
+  return `Losung360 3PL India inbound ops analyst. Write 2-section report. Use exact numbers from DATA only.
+
+IMPORTANT WRITING RULES:
+- NEVER write "decreased by X to Y" or "increased by X to Y" — this reads as if X is the starting value.
+- ALWAYS write "went from Y_prev to Y_curr (a drop/rise of X)" or "fell/rose from Y_prev to Y_curr by X".
+- Example WRONG: "appointments decreased by 15 to 149"
+- Example CORRECT: "appointments fell from 164 to 149, a decrease of 15"
+- NEVER mention Good Units numbers in the summary sentences — the numbers are too large to be meaningful highlights.
+- NEVER write "percentage points" or "pp" anywhere — write "%" only. Example: "a decrease of 6.4%" NOT "6.4 percentage points" or "6.4pp".
+- For highlights and concerns: ONLY include items with meaningful change — skip anything below 5% for rate metrics or below 10 appointment difference. Focus on the 2 most significant positives and 2 most significant negatives only.
+- RECOMMENDED ACTIONS RULE: actions must ONLY address rate/quality KPIs — Fulfilment %, Same-Day %, Median TAT, Null Rate, Damage+Short Rate. NEVER write an action about total appointment count going up or down, or about Good Units quantity going up or down — these move purely with client mix and order volume, not operational performance, so they are not actionable and must never appear in "actions". If fewer than 3 rate/quality KPIs show a meaningful (>5%) move, return fewer than 3 actions rather than inventing one about appointment counts or Good Units — do not pad the list.
+- Apply all rules in summaries, highlights, concerns, and client notes.
+
+DATA:
+${data}
+
+Return ONLY valid compact JSON (no markdown):
+{"wowSummary":"2 sentences WoW with numbers","wowHighlights":["specific +ve with numbers","2nd"],"wowConcerns":["specific -ve with numbers","2nd"],"wowMetrics":[{"name":"Total Appointments","curr":"${w.n}","prev":"${pw.n}","delta":"${DIFF(w.n,pw.n)}","dir":"${w.n>=pw.n?'up':'down'}"},{"name":"Gate-Ins","curr":"${w.gi}","prev":"${pw.gi}","delta":"${DIFF(w.gi,pw.gi)}","dir":"${w.gi>=pw.gi?'up':'down'}"},{"name":"Fulfilment %","curr":"${S(w.fulfPct,'%')}","prev":"${S(pw.fulfPct,'%')}","delta":"${DIFF(w.fulfPct,pw.fulfPct,'%')}%","dir":"${(w.fulfPct||0)>=(pw.fulfPct||0)?'up':'down'}"},{"name":"Same-Day %","curr":"${S(w.sdPct,'%')}","prev":"${S(pw.sdPct,'%')}","delta":"${DIFF(w.sdPct,pw.sdPct,'%')}%","dir":"${(w.sdPct||0)>=(pw.sdPct||0)?'up':'down'}"},{"name":"Good Units","curr":"${w.gu}","prev":"${pw.gu}","delta":"${DIFF(w.gu,pw.gu)}","dir":"${w.gu>=pw.gu?'up':'down'}"},{"name":"Damage+Short Rate","curr":"${S(w.dsPct,'%')}","prev":"${S(pw.dsPct,'%')}","delta":"${DIFF(w.dsPct,pw.dsPct,'%')}%","dir":"${(w.dsPct||0)<=(pw.dsPct||0)?'up':'down'}"},{"name":"Null Rate","curr":"${S(w.nullPct,'%')}","prev":"${S(pw.nullPct,'%')}","delta":"${DIFF(w.nullPct,pw.nullPct,'%')}%","dir":"${(w.nullPct||0)<=(pw.nullPct||0)?'up':'down'}"},{"name":"Median TAT","curr":"${S(w.medTAT,'h')}","prev":"${S(pw.medTAT,'h')}","delta":"${DIFF(w.medTAT,pw.medTAT,'h')}h","dir":"${(w.medTAT||0)<=(pw.medTAT||0)?'up':'down'}"}],"mtdSummary":"2 sentences MTD with numbers","mtdHighlights":["specific +ve with numbers","2nd"],"mtdConcerns":["specific -ve with numbers","2nd"],"mtdMetrics":[{"name":"Total Appointments","curr":"${m.n}","prev":"${pm.n}","delta":"${DIFF(m.n,pm.n)}","dir":"${m.n>=pm.n?'up':'down'}"},{"name":"Gate-Ins","curr":"${m.gi}","prev":"${pm.gi}","delta":"${DIFF(m.gi,pm.gi)}","dir":"${m.gi>=pm.gi?'up':'down'}"},{"name":"Fulfilment %","curr":"${S(m.fulfPct,'%')}","prev":"${S(pm.fulfPct,'%')}","delta":"${DIFF(m.fulfPct,pm.fulfPct,'%')}%","dir":"${(m.fulfPct||0)>=(pm.fulfPct||0)?'up':'down'}"},{"name":"Same-Day %","curr":"${S(m.sdPct,'%')}","prev":"${S(pm.sdPct,'%')}","delta":"${DIFF(m.sdPct,pm.sdPct,'%')}%","dir":"${(m.sdPct||0)>=(pm.sdPct||0)?'up':'down'}"},{"name":"Good Units","curr":"${m.gu}","prev":"${pm.gu}","delta":"${DIFF(m.gu,pm.gu)}","dir":"${m.gu>=pm.gu?'up':'down'}"},{"name":"Null Rate","curr":"${S(m.nullPct,'%')}","prev":"${S(pm.nullPct,'%')}","delta":"${DIFF(m.nullPct,pm.nullPct,'%')}%","dir":"${(m.nullPct||0)<=(pm.nullPct||0)?'up':'down'}"}],"actions":["action tied to the single most impacted RATE/QUALITY KPI only (Fulfilment %, Same-Day %, Median TAT, Null Rate, or Damage+Short Rate) with specific number e.g. Same-day clearance at X% — coordinate dock allocation to prioritise same-day exits","action tied to 2nd most impacted rate/quality KPI, or a client-specific operational follow-up tied to a rate/quality issue — omit if fewer than 2 qualify","3rd action only if a 3rd rate/quality KPI genuinely qualifies — omit entirely rather than referencing appointment count or Good Units changes"]}`;
+}
+
+// ── AI call — via Cloudflare Worker proxy (key stays in Cloudflare, never here) ──
+async function callAI(prompt) {
+  if (GROQ_PROXY.includes('YOUR-WORKER')) {
+    throw new Error('Cloudflare Worker not configured yet. See cloudflare-worker.js setup instructions.');
+  }
+  // Call your Worker proxy — it adds the Groq key server-side and forwards
+  const resp = await fetch(GROQ_PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3, max_tokens: 1500,
+      response_format: { type: 'json_object' }
+    })
+  });
+  if (!resp.ok) {
+    const e = await resp.json().catch(() => ({}));
+    throw new Error(e.error?.message || `Proxy error ${resp.status}`);
+  }
+  const j = await resp.json();
+  const raw = (j.choices?.[0]?.message?.content || '').replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+  return JSON.parse(raw);
+}
+// ── Render 2-page report ──────────────────────────────────────────────────────
+function renderReport(rpt, d) {
+  const content = document.getElementById('ai-report-content');
+  document.getElementById('ai-report-actions').innerHTML =
+    `<button class="ai-rpt-btn download" onclick="downloadReport()">⬇ Download PDF</button>` +
+    `<button class="ai-rpt-btn" onclick="pushReportEmail()" id="email-send-btn"
+      style="background:#6366f1;color:#fff;border:none;margin-left:8px;cursor:pointer;
+             padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;">
+      📧 Send Email
+    </button>`;
+
+  const F = n => n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n==null?'—':String(Math.round(n));
+  const P = v => v==null?'—':v+'%';
+
+  // Apply priority sort to all client arrays before rendering
+  d.week.topClients  = prioritySort(d.week.topClients  || []);
+  d.pweek.topClients = prioritySort(d.pweek.topClients || []);
+  d.mtd.topClients   = prioritySort(d.mtd.topClients   || []);
+  d.pmtd.topClients  = prioritySort(d.pmtd.topClients  || []);
+
+  function dirChip(dir,delta){
+    const up=dir==='up', dn=dir==='down';
+    const col=up?'#16a34a':dn?'#dc2626':'#6b7280';
+    const bg=up?'#dcfce7':dn?'#fee2e2':'#f3f4f6';
+    const icon=up?'▲':dn?'▼':'—';
+    return `<span style="background:${bg};color:${col};padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800;">${icon} ${delta}</span>`;
+  }
+
+  // Metric comparison table
+  function metricTable(metrics, currHdr, prevHdr) {
+    return `<table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+      <thead><tr style="border-bottom:2px solid var(--card-border);">
+        <th style="text-align:left;padding:8px 0;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Metric</th>
+        <th style="text-align:right;padding:8px 12px;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">${currHdr}</th>
+        <th style="text-align:right;padding:8px 12px;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">${prevHdr}</th>
+        <th style="text-align:right;padding:8px 0;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Change</th>
+      </tr></thead>
+      <tbody>${(metrics||[]).map((m,i)=>`
+        <tr style="border-bottom:1px solid var(--card-border);background:${i%2?'rgba(0,0,0,.018)':'transparent'};">
+          <td style="padding:10px 0;font-weight:600;color:var(--text1);">${m.name}</td>
+          <td style="padding:10px 12px;text-align:right;font-weight:800;color:var(--text1);font-size:14px;">${m.curr}</td>
+          <td style="padding:10px 12px;text-align:right;color:var(--text3);">${m.prev}</td>
+          <td style="padding:10px 0;text-align:right;">${dirChip(m.dir,m.delta)}</td>
+        </tr>`).join('')}
+      </tbody></table>`;
+  }
+
+  // KPI band
+  function kpiBand(m, rgb) {
+    const c = rgb || '99,102,241';
+    const kpis=[
+      ['Appts',F(m.n)],['Gate-Ins',F(m.gi)],['Fulfilment',P(m.fulfPct)],
+      ['Same-Day',P(m.sdPct)],['Good Units',F(m.gu)],['Damage+Short',P(m.dsPct)],
+      ['Null Rate',P(m.nullPct)],['Median TAT',m.medTAT?m.medTAT+'h':'—']
+    ];
+    return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;">
+      ${kpis.map(([l,v])=>`<div style="background:rgba(${c},.06);border:1px solid rgba(${c},.18);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:var(--text1);letter-spacing:-.02em;">${v}</div>
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:700;margin-top:3px;">${l}</div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  // Client table
+  function clientTable(curr, prev) {
+    // Relative % chip — for count-based columns (Appts, Good Units)
+    function relChip(curr, prevVal, higherIsBetter=true) {
+      if (prevVal == null || prevVal === 0 || curr == null) return '';
+      const pct = ((curr - prevVal) / Math.abs(prevVal) * 100).toFixed(0);
+      const isUp = +pct >= 0;
+      const good = higherIsBetter ? isUp : !isUp;
+      const col  = good ? '#16a34a' : '#dc2626';
+      return `<span style="font-size:9px;font-weight:700;color:${col};margin-left:5px;">${isUp?'▲':'▼'}${Math.abs(pct)}%</span>`;
+    }
+    // Absolute diff chip — for rate columns (Null Rate%, Same-Day%)
+    // Shows e.g. ▲+4.2% or ▼-3.1% (actual percentage point change, not relative)
+    function absChip(curr, prevVal, higherIsBetter=true) {
+      if (prevVal == null || curr == null) return '';
+      const diff = (curr - prevVal).toFixed(1);
+      const isUp = +diff >= 0;
+      const good = higherIsBetter ? isUp : !isUp;
+      const col  = good ? '#16a34a' : '#dc2626';
+      return `<span style="font-size:9px;font-weight:700;color:${col};margin-left:5px;">${isUp?'▲':' ▼'}${isUp?'+':''}${diff}%</span>`;
+    }
+    const thStyle = 'text-align:center;padding:10px 8px;color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:.06em;';
+    const tdStyle = 'text-align:center;padding:12px 8px;font-weight:700;color:var(--text1);white-space:nowrap;';
+    const tdPrev  = 'text-align:center;padding:12px 8px;font-weight:500;color:var(--text3);white-space:nowrap;font-size:11px;';
+    return `<table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+      <thead><tr style="border-bottom:2px solid var(--card-border);">
+        <th style="text-align:left;padding:10px 0;color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:.06em;width:20%;">Client</th>
+        <th style="${thStyle}">Appts</th>
+        <th style="${thStyle}color:#bbb;">Prev</th>
+        <th style="${thStyle}">Good Units</th>
+        <th style="${thStyle}color:#bbb;">Prev GU</th>
+        <th style="${thStyle}">Null%</th>
+        <th style="${thStyle}color:#bbb;">Prev</th>
+        <th style="${thStyle}padding-right:0;">Same-Day%</th>
+        <th style="${thStyle}color:#bbb;padding-right:0;">Prev</th>
+      </tr></thead>
+      <tbody>${curr.map((c,i)=>{
+        const pc = prev.find(p=>p.cl===c.cl);
+        const isPriority = CLIENT_PRIORITY_ORDER.includes(c.cl);
+        return `<tr style="border-bottom:1px solid var(--card-border);${isPriority?'background:rgba(249,115,22,.03);':''}">
+          <td style="padding:12px 0;">
+            <div style="font-weight:800;font-size:12px;color:var(--text1);white-space:nowrap;">${isPriority?'⭐\u00A0':' '}${c.cl}</div>
+          </td>
+          <td style="${tdStyle}color:#f97316;">
+            ${c.n}${relChip(c.n, pc?.n, true)}
+          </td>
+          <td style="${tdPrev}">${pc ? pc.n : '—'}</td>
+          <td style="${tdStyle}">
+            ${F(c.gu)}${relChip(c.gu, pc?.gu, true)}
+          </td>
+          <td style="${tdPrev}">${pc ? F(pc.gu) : '—'}</td>
+          <td style="${tdStyle}">
+            ${P(c.nullPct)}${pc?.nullPct!=null ? absChip(c.nullPct, pc.nullPct, false) : ''}
+          </td>
+          <td style="${tdPrev}">${pc?.nullPct!=null ? P(pc.nullPct) : '—'}</td>
+          <td style="${tdStyle}padding-right:0;">
+            ${P(c.sdPct)}${pc?.sdPct!=null ? absChip(c.sdPct, pc.sdPct, true) : ''}
+          </td>
+          <td style="${tdPrev}padding-right:0;">${pc?.sdPct!=null ? P(pc.sdPct) : '—'}</td>
+        </tr>`;
+      }).join('')}
+      </tbody></table>`;
+  }
+
+  // Insight pills
+  function pills(items, type) {
+    const bg=type==='h'?'rgba(99,102,241,.07)':'rgba(239,68,68,.06)';
+    const bc=type==='h'?'#6366f1':'#ef4444';
+    const icon=type==='h'?'✅':'⚠️';
+    return (items||[]).map(t=>`<div style="border-left:3px solid ${bc};background:${bg};padding:8px 12px;border-radius:0 8px 8px 0;font-size:12px;color:var(--text1);margin-bottom:6px;">${icon} ${t}</div>`).join('');
+  }
+
+  // Page header
+  function pageHeader(num, title, subTitle, accentColor) {
+    return `<div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid ${accentColor}20;">
+      <div style="width:52px;height:52px;background:${accentColor};border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:900;flex-shrink:0;">${num}</div>
+      <div>
+        <div style="font-size:20px;font-weight:900;color:var(--text1);letter-spacing:-.02em;">${title}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">${subTitle}</div>
+      </div>
+    </div>`;
+  }
+
+  const html = `<div id="ai-report-printable">
+
+    <!-- ── REPORT COVER ── -->
+    <div style="background:linear-gradient(135deg,#7c2d12 0%,#c2410c 50%,#ea580c 100%);border-radius:16px;padding:36px 40px;margin-bottom:20px;color:#fff;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);margin-bottom:12px;">LOSUNG360 IBMS · AI OPERATIONS REPORT</div>
+      <div style="font-size:28px;font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:8px;">Weekly Inbound Performance Report</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:12px;display:flex;gap:24px;flex-wrap:wrap;">
+        <span>📅 Week: ${d.windows.week.label}</span>
+        <span>📆 MTD: ${d.windows.mtd.label}</span>
+        <span>🏢 Central Planning & Excellence</span>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE 1 — WEEK ON WEEK ═══ -->
+    <div style="border:1.5px solid rgba(249,115,22,.25);border-radius:16px;padding:28px;margin-bottom:20px;background:var(--card-bg);">
+
+      ${pageHeader('01','Week on Week Performance',`${d.windows.week.label}  vs  ${d.windows.pweek.label}`,'#f97316')}
+
+      <!-- AI Summary -->
+      <div style="background:rgba(249,115,22,.06);border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--text1);line-height:1.8;border:1px solid rgba(249,115,22,.15);">
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#f97316;margin-bottom:6px;">AI ANALYSIS</div>
+        ${rpt.wowSummary||''}
+      </div>
+
+      <!-- KPI Band -->
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;">THIS WEEK AT A GLANCE</div>
+      ${kpiBand(d.week, '249,115,22')}
+
+      <!-- Metric Comparison Table -->
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;">METRIC COMPARISON</div>
+      <div style="margin-bottom:20px;">${metricTable(rpt.wowMetrics, d.windows.week.label, d.windows.pweek.label)}</div>
+
+      <!-- Highlights & Concerns -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div>
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;">HIGHLIGHTS</div>
+          ${pills(rpt.wowHighlights,'h')}
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;">CONCERNS</div>
+          ${pills(rpt.wowConcerns,'c')}
+        </div>
+      </div>
+
+      <!-- Client Table -->
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;">CLIENT PERFORMANCE — TOP ${Math.min(d.week.topClients.length,15)} BY VOLUME</div>
+      ${clientTable(d.week.topClients, d.pweek.topClients)}
+    </div>
+
+    <!-- ═══ PAGE 2 — MTD vs MTD ═══ -->
+    <div style="border:1.5px solid rgba(217,119,6,.25);border-radius:16px;padding:28px;margin-bottom:20px;background:var(--card-bg);">
+
+      ${pageHeader('02','Month-to-Date Performance',`${d.windows.mtd.label}  vs  ${d.windows.pmtd.label}`,'#d97706')}
+
+      <!-- AI Summary -->
+      <div style="background:rgba(217,119,6,.06);border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--text1);line-height:1.8;border:1px solid rgba(217,119,6,.15);">
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#d97706;margin-bottom:6px;">AI ANALYSIS</div>
+        ${rpt.mtdSummary||''}
+      </div>
+
+      <!-- KPI Band (teal) -->
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;">CURRENT MTD AT A GLANCE</div>
+      ${kpiBand(d.mtd, '217,119,6')}
+
+      <!-- MTD Metric Table -->
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;">MTD METRIC COMPARISON</div>
+      <div style="margin-bottom:20px;">${metricTable(rpt.mtdMetrics,'This MTD','Last MTD')}</div>
+
+      <!-- Highlights & Concerns -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div>
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;">HIGHLIGHTS</div>
+          ${pills(rpt.mtdHighlights,'h')}
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;">CONCERNS</div>
+          ${pills(rpt.mtdConcerns,'c')}
+        </div>
+      </div>
+
+      <!-- MTD Client Table -->
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;">CLIENT MTD PERFORMANCE — TOP ${Math.min(d.mtd.topClients.length,15)} BY VOLUME</div>
+      ${clientTable(d.mtd.topClients, d.pmtd.topClients)}
+    </div>
+
+    <!-- ═══ ACTIONS ═══ -->
+    <div style="border:1.5px solid rgba(245,158,11,.25);border-radius:16px;padding:28px;background:var(--card-bg);">
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#d97706;margin-bottom:14px;">🎯 RECOMMENDED ACTIONS</div>
+      ${(rpt.actions||[]).map((a,i)=>`<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--card-border);">
+        <span style="font-size:12px;font-weight:900;color:#d97706;flex-shrink:0;min-width:20px;">${i+1}.</span>
+        <span style="font-size:13px;color:var(--text1);line-height:1.6;">${a}</span>
+      </div>`).join('')}
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--card-border);font-size:10px;color:var(--text3);display:flex;justify-content:space-between;">
+        <span>Losung360 IBMS · AI Report</span>
+        <span>Powered by Gemini 1.5 Flash</span>
+      </div>
+    </div>
+  </div>`;
+
+  content.innerHTML = html;
+}
+
+// ── Trigger ───────────────────────────────────────────────────────────────────
+async function triggerAIReport() {
+  const btn = document.getElementById('ai-gen-btn');
+  const el  = document.getElementById('ai-report-content');
+  if(!ALL_DATA.length){alert('No data loaded yet — wait for the dashboard to finish loading.');return;}
+  btn.disabled=true; btn.innerHTML='<span class="ai-spinner"></span> Generating…';
+  document.getElementById('ai-report-actions').innerHTML='';
+  el.innerHTML=`<div style="text-align:center;padding:56px 0;">
+    <div class="ai-spinner" style="width:36px;height:36px;margin:0 auto 16px;"></div>
+    <div style="font-size:13px;color:var(--text2);font-weight:600;">Building WoW + MTD analysis via Groq ⚡…</div>
+    <div style="font-size:11px;margin-top:6px;color:var(--text3);">Analysing ${ALL_DATA.length.toLocaleString()} appointment records</div>
+  </div>`;
+  try {
+    const data   = compileReportData();
+    const report = await callAI(buildPrompt(data));
+    renderReport(report, data);
+    window._lastAIReport = {report, data};
+  } catch(e) {
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:#dc2626;">
+      <div style="font-size:24px;margin-bottom:12px;">⚠️</div>
+      <div style="font-weight:700;margin-bottom:8px;">Generation failed</div>
+      <div style="font-size:12px;color:var(--text3);max-width:400px;margin:0 auto;">${e.message}</div>
+    </div>`;
+  } finally {
+    btn.disabled=false; btn.innerHTML='⚡ Generate Report';
+  }
+}
+
+
+// ── Push report to Apps Script Web App → email send ──────────────────────────
+// Sends the already-computed {report, data} to the Apps Script Web App.
+// The Web App stores it as the authoritative payload and sends the email.
+// This guarantees the email contains EXACTLY the same numbers as the dashboard.
+async function pushReportEmail() {
+  const btn = document.getElementById('email-send-btn');
+  if (!btn) return;
+  if (APPS_SCRIPT_WEBAPP_URL === 'YOUR-APPS-SCRIPT-WEBAPP-URL') {
+    alert('⚙️ One-time setup needed:\n\n' +
+          '1. Deploy email-webapp.gs to Google Apps Script as a Web App\n' +
+          '   (Execute as: Me | Who has access: Anyone)\n' +
+          '2. Copy the Web App URL\n' +
+          '3. Paste it as APPS_SCRIPT_WEBAPP_URL in index.html\n\n' +
+          'See the setup instructions in email-webapp.gs.');
+    return;
+  }
+  if (!window._lastAIReport) {
+    alert('No report generated yet — click "⚡ Generate Report" first.');
+    return;
+  }
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Sending…';
+  try {
+    // Apps Script Web Apps block browser fetch() with Content-Type: application/json
+    // due to CORS preflight. Fix: send as application/x-www-form-urlencoded — this
+    // is a "simple request" that browsers send without a preflight, so it reaches
+    // doPost() successfully. We embed the JSON as a 'payload' form field.
+    const payloadJSON = JSON.stringify({
+      action: 'store_and_send',
+      report: window._lastAIReport.report,
+      data:   window._lastAIReport.data,
+    });
+
+    // Use no-cors so the browser doesn't block on the missing CORS headers in
+    // the response. We can't read the response body in no-cors mode, so we
+    // optimistically show ✅ and let Apps Script handle errors server-side
+    // (check Apps Script execution log if email doesn't arrive).
+    await fetch(APPS_SCRIPT_WEBAPP_URL, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body:    'payload=' + encodeURIComponent(payloadJSON),
+    });
+
+    // no-cors gives opaque response — assume success, Apps Script log will show errors
+    btn.innerHTML = '✅ Sent!';
+    setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 3000);
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+    alert('Email send failed: ' + e.message);
+  }
+}
+
+// ── Download colored PDF ──────────────────────────────────────────────────────
+// html2canvas crashes on CSS gradients (internal zero-dimension canvas bug).
+// Solution: open the report in a FRESH isolated window (no Chart.js canvases),
+// inject `print-color-adjust: exact` so ALL gradients and backgrounds print,
+// then auto-trigger print. Destination: "Save as PDF" / "Microsoft Print to PDF".
+function downloadReport() {
+  const el = document.getElementById('ai-report-printable');
+  if (!el) return;
+
+  // Resolve CSS variables → actual light-theme hex values
+  const vars = {
+    'var(--card-bg)':'#ffffff','var(--card-border)':'#e5e7eb',
+    'var(--text1)':'#111827','var(--text2)':'#374151',
+    'var(--text3)':'#9ca3af','var(--orange-tint)':'#fff7ed',
+    'var(--accent)':'#f97316','var(--font)':"'Segoe UI',sans-serif",
+  };
+  let html = el.outerHTML;
+  Object.entries(vars).forEach(([v,c]) => { html = html.replaceAll(v,c); });
+
+  const page = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Losung360 IBMS Report</title>
+<style>
+  *,*::before,*::after{
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+    box-sizing:border-box;
+  }
+  body{margin:0;padding:16px;font-family:'Segoe UI',Arial,sans-serif;background:#f3f4f6;}
+  table{border-collapse:collapse;}
+  @page{margin:0.6cm;size:A4;}
+  @media print{body{margin:0;padding:0;}}
+</style></head>
+<body>${html}
+<script>window.onload=function(){setTimeout(function(){window.print();},600);};<\/script>
+</body></html>`;
+
+  const w = window.open('','_blank','width=860,height=900');
+  if (!w) { alert('Pop-up blocked — allow pop-ups for this site, then try again.'); return; }
+  w.document.open();
+  w.document.write(page);
+  w.document.close();
+}
+
 </script>
 </body>
 </html>
